@@ -1,0 +1,11 @@
+{
+  "name": "aws-certified-cloud-practitioner-platform",
+  "version": "1.0.0",
+  "description": "Interactive Exam Prep Platform for AWS Certified Cloud Practitioner",
+  "scripts": {
+    "dev": "npx http-server -p 3000 -o /platform.html"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

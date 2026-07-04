@@ -1,0 +1,1482 @@
+// AWS Certified Cloud Practitioner Platform Logic
+
+// ==================== CONFIGURATION & METADATA ====================
+const NOTES_LIST = [
+  { id: 'cloud_computing', title: 'Cloud Computing' },
+  { id: 'iam', title: 'IAM: Identity Access & Management' },
+  { id: 'ec2', title: 'EC2: Virtual Machines' },
+  { id: 'ec2_storage', title: 'EC2 Instance Storage' },
+  { id: 'elb_asg', title: 'Elastic Load Balancing & Auto Scaling Groups' },
+  { id: 's3', title: 'Amazon S3' },
+  { id: 'databases', title: 'Databases & Analytics' },
+  { id: 'other_compute', title: 'Other Compute Section' },
+  { id: 'deploying', title: 'Deploying & Managing Infrastructure' },
+  { id: 'global_infrastructure', title: 'Global Infrastructure' },
+  { id: 'cloud_integration', title: 'Cloud Integration' },
+  { id: 'cloud_monitoring', title: 'Cloud Monitoring' },
+  { id: 'vpc', title: 'VPC' },
+  { id: 'security_compliance', title: 'Security & Compliance' },
+  { id: 'machine_learning', title: 'Machine Learning' },
+  { id: 'account_management_billing_support', title: 'Account Management, Billing & Support' },
+  { id: 'advanced_identity', title: 'Advanced Identity' },
+  { id: 'other_aws_services', title: 'Other AWS Services' },
+  { id: 'architecting_and_ecosystem', title: 'AWS Architecting & Ecosystem' }
+];
+
+const EXAMS_COUNT = 23;
+
+// ==================== APPLICATION STATE ====================
+const state = {
+  activeView: 'dashboard',
+  notesProgress: {}, // e.g. { cloud_computing: true }
+  examAttempts: [],  // e.g. [{ id, examId, score, correct, total, date, timeSpent, passed }]
+  
+  // Active Exam state
+  activeExam: {
+    id: null,
+    mode: 'study', // 'study' or 'exam'
+    questions: [],
+    userAnswers: {}, // index -> Array of chosen letters (e.g. ['A', 'C'])
+    flagged: new Set(),
+    timeRemaining: 90 * 60, // 90 minutes in seconds
+    timeSpent: 0,
+    timerInterval: null,
+    currentIndex: 0,
+    isPaused: false
+  }
+};
+
+// Safe icon loader
+function createIconsSafe() {
+  if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') {
+    lucide.createIcons();
+  } else {
+    console.warn('Lucide icons library not loaded yet or unavailable.');
+  }
+}
+
+// ==================== INITIALIZATION ====================
+document.addEventListener('DOMContentLoaded', () => {
+  loadProgressFromStorage();
+  initRouting();
+  initTheme();
+  initEventListeners();
+  renderDashboard();
+  renderNotesMenu();
+  createIconsSafe();
+});
+
+// Load progress from LocalStorage
+function loadProgressFromStorage() {
+  const savedNotes = localStorage.getItem('aws_prep_notes_progress');
+  if (savedNotes) {
+    state.notesProgress = JSON.parse(savedNotes);
+  }
+  
+  const savedAttempts = localStorage.getItem('aws_prep_exam_attempts');
+  if (savedAttempts) {
+    state.examAttempts = JSON.parse(savedAttempts);
+  }
+}
+
+// Save progress to LocalStorage
+function saveProgressToStorage() {
+  localStorage.setItem('aws_prep_notes_progress', JSON.stringify(state.notesProgress));
+}
+
+function saveAttemptsToStorage() {
+  localStorage.setItem('aws_prep_exam_attempts', JSON.stringify(state.examAttempts));
+}
+
+// ==================== THEME CONTROLLER ====================
+function initTheme() {
+  const currentTheme = localStorage.getItem('aws_prep_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', currentTheme);
+  updateThemeUI(currentTheme);
+}
+
+function toggleTheme() {
+  const currentTheme = document.documentElement.getAttribute('data-theme');
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', newTheme);
+  localStorage.setItem('aws_prep_theme', newTheme);
+  updateThemeUI(newTheme);
+  
+  // Refresh mind map if visible
+  if (state.activeView === 'mindmap') {
+    setupMindmapView();
+  }
+}
+
+function updateThemeUI(theme) {
+  const themeText = document.querySelector('.theme-text');
+  if (themeText) {
+    themeText.innerText = theme === 'dark' ? 'Light Mode' : 'Dark Mode';
+  }
+}
+
+// ==================== APP ROUTER ====================
+function initRouting() {
+  window.addEventListener('hashchange', handleRouteChange);
+  handleRouteChange(); // Trigger initial routing
+}
+
+function handleRouteChange() {
+  const hash = window.location.hash || '#dashboard';
+  const parts = hash.split('?');
+  const route = parts[0];
+  const params = {};
+  
+  if (parts[1]) {
+    parts[1].split('&').forEach(param => {
+      const kv = param.split('=');
+      params[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1] || '');
+    });
+  }
+  
+  // Set active link in sidebar
+  const viewName = route.replace('#', '');
+  state.activeView = viewName;
+  
+  document.querySelectorAll('.nav-link').forEach(link => {
+    if (link.getAttribute('data-view') === viewName) {
+      link.classList.add('active');
+    } else {
+      link.classList.remove('active');
+    }
+  });
+  
+  // Switch Views
+  document.querySelectorAll('.view-section').forEach(section => {
+    section.classList.remove('active');
+  });
+  
+  const activeSection = document.getElementById(`${viewName}-view`);
+  if (activeSection) {
+    activeSection.classList.add('active');
+  }
+  
+  // Reset mobile sidebar
+  const sidebar = document.getElementById('sidebar');
+  if (sidebar) sidebar.classList.remove('mobile-open');
+  
+  // View specific setups
+  if (viewName === 'dashboard') {
+    renderDashboard();
+  } else if (viewName === 'notes') {
+    setupNotesView(params.id);
+  } else if (viewName === 'exams') {
+    setupExamsView(params.id);
+  } else if (viewName === 'syllabus') {
+    setupSyllabusView();
+  } else if (viewName === 'mindmap') {
+    setupMindmapView();
+  }
+  
+  createIconsSafe();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ==================== EVENT LISTENERS ====================
+function initEventListeners() {
+  // Theme toggle
+  const themeBtn = document.getElementById('theme-toggle-btn');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', toggleTheme);
+  }
+  
+  // Reset Progress Modal Trigger
+  const resetBtn = document.getElementById('reset-progress-btn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      const resetModal = document.getElementById('reset-confirm-modal');
+      if (resetModal) {
+        resetModal.style.display = 'flex';
+        
+        document.getElementById('reset-modal-cancel-btn').onclick = () => {
+          resetModal.style.display = 'none';
+        };
+        
+        document.getElementById('reset-modal-confirm-btn').onclick = () => {
+          resetModal.style.display = 'none';
+          localStorage.removeItem('aws_prep_notes_progress');
+          localStorage.removeItem('aws_prep_exam_attempts');
+          state.notesProgress = {};
+          state.examAttempts = [];
+          window.location.href = 'platform.html#dashboard';
+          window.location.reload();
+        };
+      }
+    });
+  }
+  
+  // Mobile menu buttons
+  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+  if (mobileMenuBtn) {
+    mobileMenuBtn.addEventListener('click', () => {
+      document.getElementById('sidebar').classList.add('mobile-open');
+    });
+  }
+  
+  const mobileCloseBtn = document.getElementById('mobile-close-btn');
+  if (mobileCloseBtn) {
+    mobileCloseBtn.addEventListener('click', () => {
+      document.getElementById('sidebar').classList.remove('mobile-open');
+    });
+  }
+  
+  // Note Search input
+  const searchInput = document.getElementById('notes-search-input');
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+      document.querySelectorAll('.notes-item-btn').forEach(btn => {
+        const textBtn = btn.querySelector('.unit-title');
+        if (textBtn) {
+          const text = textBtn.innerText.toLowerCase();
+          if (text.includes(query)) {
+            btn.style.display = 'flex';
+          } else {
+            btn.style.display = 'none';
+          }
+        }
+      });
+    });
+  }
+  
+  // Mark note completed checkbox
+  const compCheckbox = document.getElementById('note-completed-checkbox');
+  if (compCheckbox) {
+    compCheckbox.addEventListener('change', (e) => {
+      const activeBtn = document.querySelector('.notes-item-btn.active');
+      if (activeBtn) {
+        const id = activeBtn.getAttribute('data-id');
+        state.notesProgress[id] = e.target.checked;
+        saveProgressToStorage();
+        // Update stats check
+        renderNotesMenu();
+      }
+    });
+  }
+  
+  // Intercept click on note inline links to prevent hashchange routing issues
+  const notesContainer = document.getElementById('notes-content-placeholder');
+  if (notesContainer) {
+    notesContainer.addEventListener('click', (e) => {
+      const link = e.target.closest('a');
+      if (link) {
+        const href = link.getAttribute('href');
+        if (href && href.startsWith('#')) {
+          e.preventDefault();
+          const targetId = href.substring(1);
+          // Try finding direct element or lowercased decodes
+          let targetEl = document.getElementById(targetId) || 
+                         document.getElementById(decodeURIComponent(targetId)) ||
+                         document.getElementById(targetId.toLowerCase());
+                         
+          if (!targetEl) {
+            // Find by heading content
+            const headings = notesContainer.querySelectorAll('h1, h2, h3, h4');
+            for (const h of headings) {
+              const hId = h.innerText.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+              if (hId === targetId || hId === targetId.toLowerCase()) {
+                targetEl = h;
+                break;
+              }
+            }
+          }
+          if (targetEl) {
+            targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } else {
+            console.warn('Anchor target not found:', targetId);
+          }
+        }
+      }
+    });
+  }
+
+  // Intercept click on note TOC links
+  const tocLinks = document.getElementById('notes-toc-links');
+  if (tocLinks) {
+    tocLinks.addEventListener('click', (e) => {
+      const link = e.target.closest('a');
+      if (link) {
+        const href = link.getAttribute('href');
+        if (href && href.startsWith('#')) {
+          e.preventDefault();
+          const targetId = href.substring(1);
+          const targetEl = document.getElementById(targetId);
+          if (targetEl) {
+            targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
+      }
+    });
+  }
+
+  // Intercept Back to Test Center link click (handles already #exams hash)
+  const backExamsBtn = document.getElementById('results-back-exams-btn');
+  if (backExamsBtn) {
+    backExamsBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.location.hash = '#exams';
+      handleRouteChange();
+    });
+  }
+
+  // Keyboard navigation for active exams & results review via left/right arrows
+  document.addEventListener('keydown', (e) => {
+    // Avoid interfering with inputs if user is typing
+    if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) {
+      return;
+    }
+    
+    const activeExamContainer = document.getElementById('active-exam-container');
+    const resContainer = document.getElementById('exam-results-container');
+    
+    if (activeExamContainer && activeExamContainer.style.display === 'block') {
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        nextQuestion();
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        prevQuestion();
+      }
+    } else if (resContainer && resContainer.style.display === 'block') {
+      const ae = state.activeExam;
+      if (!ae || !ae.questions) return;
+      
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        let nextIdx = currentReviewIndex + 1;
+        if (nextIdx < ae.questions.length) {
+          showReviewQuestion(nextIdx);
+          const nextBubble = document.getElementById(`r-nav-bubble-${nextIdx}`);
+          if (nextBubble) nextBubble.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        let prevIdx = currentReviewIndex - 1;
+        if (prevIdx >= 0) {
+          showReviewQuestion(prevIdx);
+          const prevBubble = document.getElementById(`r-nav-bubble-${prevIdx}`);
+          if (prevBubble) prevBubble.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }
+    }
+  });
+}
+
+// ==================== DASHBOARD VIEW CONTROLLER ====================
+function renderDashboard() {
+  // Update stats
+  const totalNotes = NOTES_LIST.length;
+  const completedNotes = Object.values(state.notesProgress).filter(Boolean).length;
+  const progressPercent = totalNotes > 0 ? Math.round((completedNotes / totalNotes) * 100) : 0;
+  
+  document.getElementById('stats-progress-percent').innerText = `${progressPercent}%`;
+  document.getElementById('stats-progress-count').innerText = `${completedNotes} of ${totalNotes} units read`;
+  
+  const attempts = state.examAttempts;
+  const examsCompleted = attempts.length;
+  document.getElementById('stats-exams-completed').innerText = examsCompleted;
+  
+  let avgScore = 0;
+  if (examsCompleted > 0) {
+    const totalScore = attempts.reduce((sum, att) => sum + att.score, 0);
+    avgScore = Math.round(totalScore / examsCompleted);
+  }
+  document.getElementById('stats-average-score').innerText = `${avgScore}%`;
+  
+  // Exam readiness calculation
+  let readiness = 'Not Ready';
+  let subText = 'Read study notes & pass tests';
+  if (progressPercent > 50 && avgScore >= 70) {
+    readiness = 'Excellent';
+    subText = 'Highly likely to pass the real exam!';
+  } else if (progressPercent > 30 && avgScore >= 60) {
+    readiness = 'Moderate';
+    subText = 'Keep reviewing incorrect answers';
+  } else if (progressPercent > 10) {
+    readiness = 'Beginning';
+    subText = 'Continue building AWS fundamentals';
+  }
+  
+  const readinessEl = document.getElementById('stats-readiness');
+  readinessEl.innerText = readiness;
+  if (readiness === 'Excellent') {
+    readinessEl.style.color = 'var(--success-color)';
+  } else if (readiness === 'Moderate') {
+    readinessEl.style.color = 'var(--warning-color)';
+  } else {
+    readinessEl.style.color = 'var(--text-primary)';
+  }
+  document.getElementById('stats-readiness-sub').innerText = subText;
+  
+  // Continue learning card
+  const nextNote = NOTES_LIST.find(note => !state.notesProgress[note.id]);
+  const contCard = document.getElementById('continue-card');
+  if (nextNote) {
+    document.getElementById('continue-title').innerText = nextNote.title;
+    document.getElementById('continue-btn').href = `#notes?id=${nextNote.id}`;
+    document.getElementById('continue-btn').innerText = 'Resume Reading';
+    document.getElementById('continue-description').innerText = 'Ready to begin study';
+    contCard.style.display = 'flex';
+  } else {
+    document.getElementById('continue-title').innerText = 'All Materials Completed!';
+    document.getElementById('continue-btn').href = '#exams';
+    document.getElementById('continue-btn').innerText = 'Go to Practice Tests';
+    document.getElementById('continue-description').innerText = 'Awesome job! Put your skills to the test.';
+  }
+  
+  // Attempts list table
+  const tbody = document.getElementById('recent-attempts-list');
+  if (examsCompleted === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" class="empty-state">No exam attempts yet. Choose an exam from the Test Center to begin!</td></tr>`;
+  } else {
+    tbody.innerHTML = attempts.slice().reverse().slice(0, 5).map(att => {
+      const isStudy = att.mode === 'study';
+      const statusClass = isStudy ? 'study-badge' : (att.passed ? 'pass' : 'fail');
+      const statusText = isStudy ? 'Study' : (att.passed ? 'Pass' : 'Fail');
+      return `
+        <tr>
+          <td><strong>Practice Exam ${att.examId}</strong></td>
+          <td>${new Date(att.date).toLocaleDateString()}</td>
+          <td>${att.score}% (${att.correct}/${att.total})</td>
+          <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+        </tr>
+      `;
+    }).join('');
+  }
+}
+
+// ==================== STUDY NOTES VIEW CONTROLLER ====================
+function renderNotesMenu() {
+  const menuContainer = document.getElementById('notes-menu-list');
+  if (!menuContainer) return;
+  
+  menuContainer.innerHTML = NOTES_LIST.map((note, index) => {
+    const isCompleted = state.notesProgress[note.id];
+    const checkIcon = isCompleted ? `<span style="color: var(--success-color); font-size: 11px; margin-left: auto;">✔️ Completed</span>` : '';
+    return `
+      <button class="notes-item-btn" data-id="${note.id}" onclick="window.location.hash='#notes?id=${note.id}'">
+        <div style="display: flex; width: 100%; align-items: center;">
+          <span class="unit-number">Unit ${index + 1}</span>
+          ${checkIcon}
+        </div>
+        <span class="unit-title">${note.title}</span>
+      </button>
+    `;
+  }).join('');
+}
+
+function setupNotesView(id) {
+  renderNotesMenu();
+  
+  if (!id) {
+    // Show placeholder empty state
+    document.getElementById('notes-content-placeholder').innerHTML = `
+      <div class="empty-notes-state">
+        <i data-lucide="book-open"></i>
+        <h2>Select a Study Unit</h2>
+        <p>Choose a module from the left panel to begin reading the study notes.</p>
+      </div>
+    `;
+    document.getElementById('note-completed-checkbox').checked = false;
+    document.getElementById('note-completed-checkbox').disabled = true;
+    document.getElementById('active-note-breadcrumb').innerText = 'Select a Unit';
+    document.getElementById('notes-toc-links').innerHTML = '';
+    lucide.createIcons();
+    return;
+  }
+  
+  // Highlight active note button
+  document.querySelectorAll('.notes-item-btn').forEach(btn => {
+    if (btn.getAttribute('data-id') === id) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+  
+  // Set checkbox state
+  const compCheckbox = document.getElementById('note-completed-checkbox');
+  compCheckbox.disabled = false;
+  compCheckbox.checked = !!state.notesProgress[id];
+  
+  // Fetch note
+  const matchedNote = NOTES_LIST.find(n => n.id === id);
+  if (matchedNote) {
+    document.getElementById('active-note-breadcrumb').innerText = matchedNote.title;
+  }
+  
+  document.getElementById('notes-content-placeholder').innerHTML = `<p class="empty-state">Loading notes content...</p>`;
+  
+  fetch(`sections/${id}.md`)
+    .then(res => {
+      if (!res.ok) throw new Error('File not found');
+      return res.text();
+    })
+    .then(text => {
+      // Clean up YAML frontmatter if exists
+      let cleanMd = text.replace(/^---[\s\S]*?---/, '');
+      
+      // Rewrite image pathways (from ../images/ to images/)
+      cleanMd = cleanMd.replace(/\.\.\/images\//g, 'images/');
+      
+      // Parse markdown to HTML
+      const html = typeof marked.parse === 'function' ? marked.parse(cleanMd) : marked(cleanMd);
+      document.getElementById('notes-content-placeholder').innerHTML = html;
+      
+      // Generate Table of Contents (TOC)
+      buildTOC();
+    })
+    .catch(err => {
+      document.getElementById('notes-content-placeholder').innerHTML = `
+        <div class="empty-notes-state">
+          <i data-lucide="alert-triangle" style="color: var(--danger-color)"></i>
+          <h2>Error Loading Notes</h2>
+          <p>We could not retrieve the notes for unit <strong>${id}</strong>. Ensure the file is at sections/${id}.md</p>
+        </div>
+      `;
+      createIconsSafe();
+    });
+}
+
+function buildTOC() {
+  const container = document.getElementById('notes-content-placeholder');
+  const headings = container.querySelectorAll('h1, h2, h3, h4');
+  const tocContainer = document.getElementById('notes-toc-links');
+  
+  if (!tocContainer) return;
+  if (headings.length === 0) {
+    tocContainer.innerHTML = '<span style="color: var(--text-muted); font-size: 13px;">No headings on this page</span>';
+    return;
+  }
+  
+  // Ensure all headings have appropriate scrollable IDs (including h1/h4)
+  headings.forEach((heading) => {
+    const id = heading.innerText.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+    heading.id = id;
+  });
+  
+  // Build links focusing on h2, h3, h4 (exclude h1 pages titles)
+  let tocHTML = '';
+  const tocHeadings = container.querySelectorAll('h2, h3, h4');
+  tocHeadings.forEach((heading) => {
+    const id = heading.id;
+    const tag = heading.tagName.toLowerCase();
+    const hClass = tag === 'h3' ? 'toc-link h3-link' : (tag === 'h4' ? 'toc-link h4-link' : 'toc-link');
+    tocHTML += `<a href="#${id}" class="${hClass}">${heading.innerText}</a>`;
+  });
+  
+  tocContainer.innerHTML = tocHTML || '<span style="color: var(--text-muted); font-size: 13px;">No headings</span>';
+}
+
+// ==================== PRACTICE EXAMS VIEW CONTROLLER ====================
+function setupExamsView(id) {
+  if (id) {
+    // We are inside an active exam session or reviewing it
+    // Routing should remain on #exams?id=X, wait for user configuration
+    return;
+  }
+  
+  // Normal mode: Show the list of exams
+  document.getElementById('exams-list-container').style.display = 'block';
+  document.getElementById('active-exam-container').style.display = 'none';
+  document.getElementById('exam-results-container').style.display = 'none';
+  
+  const examsGrid = document.getElementById('exams-grid');
+  let gridHTML = '';
+  
+  for (let i = 1; i <= EXAMS_COUNT; i++) {
+    // Check if passed/failed
+    const attempts = state.examAttempts.filter(att => att.examId === i);
+    let statusDotClass = '';
+    let statusText = 'Not Started';
+    let bestScoreText = '';
+    
+    if (attempts.length > 0) {
+      const highestScore = Math.max(...attempts.map(att => att.score));
+      const hasPassed = highestScore >= 70;
+      statusDotClass = hasPassed ? 'passed' : 'failed';
+      statusText = hasPassed ? 'Passed' : 'Failed';
+      bestScoreText = `Best Score: ${highestScore}% (${attempts.length} attempts)`;
+    }
+    
+    gridHTML += `
+      <div class="exam-panel-card">
+        <div class="exam-panel-title-row">
+          <h3>Practice Exam ${i}</h3>
+          <span class="exam-status-dot ${statusDotClass}" title="Status: ${statusText}"></span>
+        </div>
+        <div class="exam-panel-details">
+          <span>Syllabus Simulation</span>
+          <span>${bestScoreText || 'No attempts recorded'}</span>
+        </div>
+        <div class="exam-actions-row">
+          <button class="btn btn-secondary" onclick="startExamFlow(${i}, 'study')">Study Mode</button>
+          <button class="btn btn-primary" onclick="startExamFlow(${i}, 'exam')">Exam Mode</button>
+        </div>
+      </div>
+    `;
+  }
+  
+  examsGrid.innerHTML = gridHTML;
+}
+
+// Entry Point to Load and Start an Exam
+window.startExamFlow = function(examId, mode) {
+  // Clear any existing active exam state
+  if (state.activeExam.timerInterval) {
+    clearInterval(state.activeExam.timerInterval);
+  }
+  
+  document.getElementById('exams-list-container').style.display = 'none';
+  document.getElementById('exam-results-container').style.display = 'none';
+  document.getElementById('active-exam-container').style.display = 'block';
+  
+  document.getElementById('active-exam-title').innerText = `Practice Exam ${examId}`;
+  
+  const modeBadge = document.getElementById('exam-mode-badge');
+  modeBadge.innerText = mode === 'study' ? 'Study Mode' : 'Exam Mode';
+  modeBadge.style.backgroundColor = mode === 'study' ? 'var(--accent-glow)' : 'var(--primary-blue-glow)';
+  modeBadge.style.color = mode === 'study' ? 'var(--accent-color)' : 'var(--primary-blue)';
+  
+  // Pause button display
+  document.getElementById('exam-pause-btn').style.display = mode === 'study' ? 'none' : 'block';
+  
+  // Show Loading State
+  document.getElementById('current-question-text').innerHTML = 'Parsing practice exam questions. Please wait...';
+  document.getElementById('current-options-list').innerHTML = '';
+  document.getElementById('question-nav-grid').innerHTML = '';
+  
+  fetch(`practice-exam/practice-exam-${examId}.md`)
+    .then(res => {
+      if (!res.ok) throw new Error('Exam file not found');
+      return res.text();
+    })
+    .then(text => {
+      // Parse Questions
+      const questions = parseExamMarkdown(text);
+      if (questions.length === 0) {
+        throw new Error('No questions successfully parsed');
+      }
+      
+      // Setup Active Exam state
+      state.activeExam = {
+        id: examId,
+        mode: mode,
+        questions: questions,
+        userAnswers: {},
+        flagged: new Set(),
+        timeRemaining: 90 * 60, // 90 mins
+        timeSpent: 0,
+        timerInterval: null,
+        currentIndex: 0,
+        isPaused: false
+      };
+      
+      initActiveExamUI();
+    })
+    .catch(err => {
+      console.error(err);
+      document.getElementById('current-question-text').innerHTML = `
+        <div style="color: var(--danger-color); text-align: center; padding: 20px;">
+          <h3>Error Loading Exam</h3>
+          <p>We failed to load practice-exam-${examId}.md. Please check the file exists.</p>
+          <button class="btn btn-secondary" onclick="window.location.hash='#exams'" style="margin-top: 15px;">Back to Exam List</button>
+        </div>
+      `;
+    });
+};
+
+// ==================== QUIZ ENGINE: MARKDOWN PARSER ====================
+function parseExamMarkdown(text) {
+  // Strip frontmatter
+  let cleanText = text.replace(/^---[\s\S]*?---/, '');
+  
+  // Parse into question blocks.
+  // Questions start with a number followed by a dot, e.g. "1." or "25." at start of a line
+  const lines = cleanText.split('\n');
+  const questionBlocks = [];
+  let currentBlock = null;
+  
+  lines.forEach(line => {
+    const qMatch = line.match(/^\s*(\d+)\.\s*(.*)/);
+    if (qMatch) {
+      // Start of a new question
+      if (currentBlock) {
+        questionBlocks.push(currentBlock);
+      }
+      currentBlock = {
+        num: parseInt(qMatch[1]),
+        rawLines: [qMatch[2]],
+        optionsRaw: [],
+        detailsRaw: []
+      };
+    } else if (currentBlock) {
+      currentBlock.rawLines.push(line);
+    }
+  });
+  
+  if (currentBlock) {
+    questionBlocks.push(currentBlock);
+  }
+  
+  // Process each block to extract question content, choices, answer, explanation
+  const parsedQuestions = questionBlocks.map((block, idx) => {
+    let questionTextLines = [];
+    let insideDetails = false;
+    
+    block.rawLines.forEach(line => {
+      const trimmed = line.trim();
+      
+      // Check details blocks
+      if (trimmed.includes('<details')) {
+        insideDetails = true;
+        block.detailsRaw.push(line);
+      } else if (trimmed.includes('</details>')) {
+        insideDetails = false;
+        block.detailsRaw.push(line);
+      } else if (insideDetails) {
+        block.detailsRaw.push(line);
+      } else if (trimmed.startsWith('-') || trimmed.startsWith('*')) {
+        // Option item
+        block.optionsRaw.push(line);
+      } else {
+        // Regular question text
+        questionTextLines.push(line);
+      }
+    });
+    
+    const questionText = questionTextLines.join(' ').trim();
+    
+    // Parse Options
+    const options = {};
+    block.optionsRaw.forEach(optLine => {
+      // match options like "- A. Text" or " - B. Text"
+      const optMatch = optLine.match(/^\s*[-\*]\s*([A-Z])\.\s*(.*)/);
+      if (optMatch) {
+        options[optMatch[1]] = optMatch[2].trim();
+      }
+    });
+    
+    // Parse Answers & Explanations from Details block
+    const detailsContent = block.detailsRaw.join('\n');
+    
+    // Parse Answer key
+    let correctAnswers = [];
+    const ansMatch = detailsContent.match(/Correct\s+Answer:\s*([A-Z,\s]+)/i) || 
+                     detailsContent.match(/Correct\s+answer:\s*([A-Z,\s]+)/i);
+    if (ansMatch) {
+      // Find all matches of capital letters (e.g. "D", "AC", "A, E")
+      correctAnswers = ansMatch[1].match(/[A-Z]/g) || [];
+    }
+    
+    // Parse Explanation
+    let explanation = '';
+    const expMatch = detailsContent.match(/Explanation:\s*([\s\S]*?)(?=<\/details>|$)/i);
+    if (expMatch) {
+      explanation = expMatch[1].trim();
+    }
+    
+    return {
+      index: idx,
+      num: block.num,
+      questionText: questionText,
+      options: options,
+      correctAnswers: correctAnswers,
+      explanation: explanation
+    };
+  });
+  
+  return parsedQuestions;
+}
+
+// ==================== ACTIVE QUIZ CONTROLLER ====================
+function initActiveExamUI() {
+  const ae = state.activeExam;
+  
+  // Render navigator grid
+  const navGrid = document.getElementById('question-nav-grid');
+  navGrid.innerHTML = ae.questions.map((q, idx) => {
+    return `<button class="q-nav-bubble" id="q-nav-bubble-${idx}" onclick="jumpToQuestion(${idx})">${q.num}</button>`;
+  }).join('');
+  
+  // Start Timer
+  if (ae.mode === 'exam') {
+    document.getElementById('exam-timer').style.display = 'block';
+    startTimer();
+  } else {
+    document.getElementById('exam-timer').style.display = 'none';
+  }
+  
+  // Show first question
+  ae.currentIndex = 0;
+  showQuestion(0);
+  
+  // Bind actions
+  document.getElementById('quiz-prev-btn').onclick = prevQuestion;
+  document.getElementById('quiz-next-btn').onclick = nextQuestion;
+  document.getElementById('quiz-check-btn').onclick = checkQuestionAnswer;
+  document.getElementById('flag-question-btn').onclick = toggleFlag;
+  
+  const quizSubmitBtn = document.getElementById('quiz-submit-btn');
+  if (quizSubmitBtn) {
+    quizSubmitBtn.onclick = openSubmitConfirmModal;
+  }
+  
+  document.getElementById('header-submit-btn').onclick = openSubmitConfirmModal;
+  document.getElementById('exam-exit-btn').onclick = exitExamSession;
+}
+
+function startTimer() {
+  const ae = state.activeExam;
+  const display = document.getElementById('exam-timer');
+  
+  // Clear any existing
+  if (ae.timerInterval) clearInterval(ae.timerInterval);
+  
+  ae.timerInterval = setInterval(() => {
+    if (ae.isPaused) return;
+    
+    ae.timeRemaining--;
+    ae.timeSpent++;
+    
+    // Format minutes/seconds
+    const mins = Math.floor(ae.timeRemaining / 60);
+    const secs = ae.timeRemaining % 60;
+    display.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    
+    if (ae.timeRemaining <= 0) {
+      clearInterval(ae.timerInterval);
+      alert('Time is up! Your exam will be submitted automatically.');
+      submitActiveExam();
+    }
+  }, 1000);
+  
+  // Setup toggle pause listener
+  const pauseBtn = document.getElementById('exam-pause-btn');
+  pauseBtn.onclick = () => {
+    ae.isPaused = !ae.isPaused;
+    const icon = document.getElementById('pause-icon');
+    if (ae.isPaused) {
+      icon.setAttribute('data-lucide', 'play');
+      display.style.opacity = '0.5';
+    } else {
+      icon.setAttribute('data-lucide', 'pause');
+      display.style.opacity = '1';
+    }
+    createIconsSafe();
+  };
+}
+
+function showQuestion(index) {
+  const ae = state.activeExam;
+  ae.currentIndex = index;
+  
+  const q = ae.questions[index];
+  
+  // Update indicators
+  document.getElementById('current-question-num').innerText = `Question ${q.num} of ${ae.questions.length}`;
+  
+  // Update Flag icon button state
+  const flagBtn = document.getElementById('flag-question-btn');
+  if (ae.flagged.has(index)) {
+    flagBtn.classList.add('active');
+  } else {
+    flagBtn.classList.remove('active');
+  }
+  
+  // Update navigator bubbles
+  document.querySelectorAll('.q-nav-bubble').forEach(btn => btn.classList.remove('active'));
+  const activeBubble = document.getElementById(`q-nav-bubble-${index}`);
+  if (activeBubble) activeBubble.classList.add('active');
+  
+  // Render question text
+  document.getElementById('current-question-text').innerHTML = q.questionText;
+  
+  // Is multi-choice (Choose TWO, Select TWO)?
+  const isMultiChoice = q.questionText.toLowerCase().includes('two') || q.correctAnswers.length > 1;
+  
+  // Render options list
+  const optionsList = document.getElementById('current-options-list');
+  optionsList.innerHTML = Object.entries(q.options).map(([letter, text]) => {
+    const isSelected = (ae.userAnswers[index] || []).includes(letter);
+    const selClass = isSelected ? 'selected' : '';
+    return `
+      <div class="option-choice-wrapper ${selClass}" data-letter="${letter}" onclick="selectOption('${letter}', ${isMultiChoice})">
+        <div class="option-input-btn"></div>
+        <span class="option-text"><strong>${letter}.</strong> ${text}</span>
+      </div>
+    `;
+  }).join('');
+  
+  // Hide explanation block
+  document.getElementById('practice-explanation').style.display = 'none';
+  
+  // Enable/Disable navigation buttons
+  document.getElementById('quiz-prev-btn').disabled = index === 0;
+  
+  if (index === ae.questions.length - 1) {
+    document.getElementById('quiz-next-btn').style.display = 'none';
+  } else {
+    document.getElementById('quiz-next-btn').style.display = 'inline-flex';
+  }
+  
+  // Configure Practice Mode check button
+  const checkBtn = document.getElementById('quiz-check-btn');
+  if (ae.mode === 'study') {
+    checkBtn.style.display = 'inline-flex';
+    // If already checked or answered, we can show status immediately
+  } else {
+    checkBtn.style.display = 'none';
+  }
+}
+
+window.jumpToQuestion = function(index) {
+  showQuestion(index);
+};
+
+function prevQuestion() {
+  const ae = state.activeExam;
+  if (ae.currentIndex > 0) {
+    showQuestion(ae.currentIndex - 1);
+  }
+}
+
+function nextQuestion() {
+  const ae = state.activeExam;
+  if (ae.currentIndex < ae.questions.length - 1) {
+    showQuestion(ae.currentIndex + 1);
+  }
+}
+
+window.selectOption = function(letter, isMultiChoice) {
+  const ae = state.activeExam;
+  const index = ae.currentIndex;
+  
+  if (!ae.userAnswers[index]) {
+    ae.userAnswers[index] = [];
+  }
+  
+  if (isMultiChoice) {
+    const listIndex = ae.userAnswers[index].indexOf(letter);
+    if (listIndex > -1) {
+      ae.userAnswers[index].splice(listIndex, 1);
+    } else {
+      ae.userAnswers[index].push(letter);
+    }
+  } else {
+    // Single choice
+    ae.userAnswers[index] = [letter];
+  }
+  
+  // Re-render choices selection states
+  document.querySelectorAll('.option-choice-wrapper').forEach(wrapper => {
+    const l = wrapper.getAttribute('data-letter');
+    if (ae.userAnswers[index].includes(l)) {
+      wrapper.classList.add('selected');
+    } else {
+      wrapper.classList.remove('selected');
+    }
+  });
+  
+  // Update navigator status
+  const bubble = document.getElementById(`q-nav-bubble-${index}`);
+  if (ae.userAnswers[index].length > 0) {
+    bubble.classList.add('answered');
+  } else {
+    bubble.classList.remove('answered');
+  }
+}
+
+function toggleFlag() {
+  const ae = state.activeExam;
+  const idx = ae.currentIndex;
+  const flagBtn = document.getElementById('flag-question-btn');
+  const bubble = document.getElementById(`q-nav-bubble-${idx}`);
+  
+  if (ae.flagged.has(idx)) {
+    ae.flagged.delete(idx);
+    flagBtn.classList.remove('active');
+    bubble.classList.remove('flagged');
+  } else {
+    ae.flagged.add(idx);
+    flagBtn.classList.add('active');
+    bubble.classList.add('flagged');
+  }
+}
+
+function checkQuestionAnswer() {
+  const ae = state.activeExam;
+  const idx = ae.currentIndex;
+  const q = ae.questions[idx];
+  const userAnswers = ae.userAnswers[idx] || [];
+  
+  if (userAnswers.length === 0) {
+    alert('Please select an option first before checking the answer.');
+    return;
+  }
+  
+  // Grade correctness
+  const isCorrect = userAnswers.length === q.correctAnswers.length &&
+                    q.correctAnswers.every(ans => userAnswers.includes(ans));
+  
+  // Update choice containers
+  document.querySelectorAll('.option-choice-wrapper').forEach(wrapper => {
+    const l = wrapper.getAttribute('data-letter');
+    const isChosen = userAnswers.includes(l);
+    const isAnswer = q.correctAnswers.includes(l);
+    
+    wrapper.classList.remove('selected');
+    if (isAnswer) {
+      wrapper.classList.add('graded-correct');
+    } else if (isChosen) {
+      wrapper.classList.add('graded-incorrect');
+    }
+  });
+  
+  // Show explanation block
+  const expBlock = document.getElementById('practice-explanation');
+  const statusEl = document.getElementById('explanation-status');
+  const textEl = document.getElementById('explanation-text-content');
+  
+  statusEl.innerText = isCorrect ? 'Correct!' : 'Incorrect';
+  statusEl.className = `explanation-status ${isCorrect ? 'correct' : 'incorrect'}`;
+  
+  textEl.innerHTML = `
+    <p><strong>Correct answer:</strong> ${q.correctAnswers.join(', ')}</p>
+    ${q.explanation ? `<p>${q.explanation}</p>` : ''}
+  `;
+  
+  expBlock.style.display = 'block';
+}
+
+// ==================== QUIZ ENGINE: SUBMISSION & GRADING ====================
+function openSubmitConfirmModal() {
+  const ae = state.activeExam;
+  const modal = document.getElementById('submit-modal');
+  
+  const total = ae.questions.length;
+  const answered = Object.keys(ae.userAnswers).filter(k => ae.userAnswers[k].length > 0).length;
+  
+  document.getElementById('modal-answered-count').innerText = answered;
+  document.getElementById('modal-total-count').innerText = total;
+  
+  modal.style.display = 'flex';
+  
+  // Modal buttons
+  document.getElementById('modal-cancel-btn').onclick = () => {
+    modal.style.display = 'none';
+  };
+  document.getElementById('modal-submit-confirm-btn').onclick = () => {
+    modal.style.display = 'none';
+    submitActiveExam();
+  };
+}
+
+function submitActiveExam() {
+  const ae = state.activeExam;
+  
+  // Stop Timer
+  if (ae.timerInterval) clearInterval(ae.timerInterval);
+  
+  // Grade the quiz
+  let correctCount = 0;
+  ae.questions.forEach((q, idx) => {
+    const userAns = ae.userAnswers[idx] || [];
+    const isCorrect = userAns.length === q.correctAnswers.length &&
+                      q.correctAnswers.every(ans => userAns.includes(ans));
+    if (isCorrect) correctCount++;
+  });
+  
+  const total = ae.questions.length;
+  const percentage = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+  const passed = percentage >= 70; // 70% passing threshold
+  
+  // Save attempt to state & storage
+  const attempt = {
+    id: Date.now(),
+    examId: ae.id,
+    mode: ae.mode,
+    score: percentage,
+    correct: correctCount,
+    total: total,
+    date: new Date().toISOString(),
+    timeSpent: ae.timeSpent,
+    passed: passed
+  };
+  
+  state.examAttempts.push(attempt);
+  saveAttemptsToStorage();
+  
+  // Render results view
+  renderExamResults(attempt);
+}
+
+let currentReviewIndex = 0;
+
+function renderExamResults(attempt) {
+  document.getElementById('active-exam-container').style.display = 'none';
+  const resContainer = document.getElementById('exam-results-container');
+  resContainer.style.display = 'block';
+  
+  const isStudy = attempt.mode === 'study';
+  
+  document.getElementById('results-exam-name').innerText = isStudy 
+    ? `Practice Exam ${attempt.examId} - Study Summary` 
+    : `Practice Exam ${attempt.examId} - Exam Results`;
+    
+  document.getElementById('results-date-string').innerText = `Completed on ${new Date(attempt.date).toLocaleString()}`;
+  
+  // Set Score Gauge
+  const percentEl = document.getElementById('results-score-percent');
+  percentEl.innerText = `${attempt.score}%`;
+  
+  const passFailEl = document.getElementById('results-pass-fail');
+  const circle = document.querySelector('.score-circle');
+  
+  if (isStudy) {
+    passFailEl.innerText = 'REVIEW';
+    circle.classList.remove('fail');
+    circle.style.borderColor = 'var(--accent-color)';
+  } else {
+    passFailEl.innerText = attempt.passed ? 'PASS' : 'FAIL';
+    circle.style.borderColor = ''; // Reset inline borders
+    if (attempt.passed) {
+      circle.classList.remove('fail');
+    } else {
+      circle.classList.add('fail');
+    }
+  }
+  
+  // Set statistics count
+  document.getElementById('results-correct-count').innerText = attempt.correct;
+  document.getElementById('results-incorrect-count').innerText = attempt.total - attempt.correct;
+  document.getElementById('results-total-count').innerText = attempt.total;
+  
+  // Time taken formatting
+  const mins = Math.floor(attempt.timeSpent / 60);
+  const secs = attempt.timeSpent % 60;
+  document.getElementById('results-time-spent').innerText = `${mins}m ${secs}s`;
+  
+  // Find first incorrect question (or first overall if perfect) to show initially
+  const ae = state.activeExam;
+  let firstShowIdx = 0;
+  for (let i = 0; i < ae.questions.length; i++) {
+    const userAns = ae.userAnswers[i] || [];
+    const q = ae.questions[i];
+    const isCorrect = userAns.length === q.correctAnswers.length &&
+                      q.correctAnswers.every(ans => userAns.includes(ans));
+    if (!isCorrect) {
+      firstShowIdx = i;
+      break;
+    }
+  }
+  
+  // Populates the left navigation grid
+  populateResultsNavGrid('all');
+  
+  // Select first question
+  showReviewQuestion(firstShowIdx);
+  
+  // Hook filter events
+  const filters = document.querySelectorAll('.results-review-controls .filter-buttons button');
+  filters.forEach(btn => {
+    btn.onclick = (e) => {
+      filters.forEach(b => b.classList.remove('active'));
+      e.target.classList.add('active');
+      const filter = e.target.getAttribute('data-filter');
+      populateResultsNavGrid(filter);
+    };
+  });
+}
+
+function populateResultsNavGrid(filter) {
+  const ae = state.activeExam;
+  const grid = document.getElementById('results-nav-grid');
+  if (!grid) return;
+  
+  let gridHTML = '';
+  ae.questions.forEach((q, idx) => {
+    const userAns = ae.userAnswers[idx] || [];
+    const isCorrect = userAns.length === q.correctAnswers.length &&
+                      q.correctAnswers.every(ans => userAns.includes(ans));
+    const isFlagged = ae.flagged.has(idx);
+    
+    // Apply filters
+    if (filter === 'incorrect' && isCorrect) return;
+    if (filter === 'flagged' && !isFlagged) return;
+    
+    const correctClass = isCorrect ? 'correct' : 'incorrect';
+    const flaggedClass = isFlagged ? 'flagged' : '';
+    const activeClass = idx === currentReviewIndex ? 'active' : '';
+    
+    gridHTML += `
+      <button class="r-nav-bubble ${correctClass} ${flaggedClass} ${activeClass}" 
+              id="r-nav-bubble-${idx}" 
+              onclick="showReviewQuestion(${idx})">
+        ${q.num}
+      </button>
+    `;
+  });
+  
+  grid.innerHTML = gridHTML || '<p style="grid-column: 1/-1; font-size: 13px; color: var(--text-muted); text-align: center; padding: 20px;">No matching questions</p>';
+}
+
+window.showReviewQuestion = function(index) {
+  currentReviewIndex = index;
+  const ae = state.activeExam;
+  const q = ae.questions[index];
+  const userAns = ae.userAnswers[index] || [];
+  
+  // Highlight bubble
+  document.querySelectorAll('.r-nav-bubble').forEach(b => b.classList.remove('active'));
+  const bubble = document.getElementById(`r-nav-bubble-${index}`);
+  if (bubble) bubble.classList.add('active');
+  
+  // Grade correctness
+  const isCorrect = userAns.length === q.correctAnswers.length &&
+                    q.correctAnswers.every(ans => userAns.includes(ans));
+                    
+  const containerClass = isCorrect ? 'correct-highlight' : 'incorrect-highlight';
+  const statusText = isCorrect ? 'Correct' : 'Incorrect';
+  const statusClass = isCorrect ? 'correct' : 'incorrect';
+  
+  // Build options elements
+  const optsHTML = Object.entries(q.options).map(([letter, text]) => {
+    const isChosen = userAns.includes(letter);
+    const isAnswer = q.correctAnswers.includes(letter);
+    
+    let badgeClass = '';
+    if (isAnswer) {
+      badgeClass = 'graded-correct';
+    } else if (isChosen) {
+      badgeClass = 'graded-incorrect';
+    }
+    
+    return `
+      <div class="option-choice-wrapper ${badgeClass}" style="cursor: default; margin-bottom: 8px;">
+        <div class="option-input-btn"></div>
+        <span class="option-text"><strong>${letter}.</strong> ${text}</span>
+      </div>
+    `;
+  }).join('');
+  
+  const detailPanel = document.getElementById('results-active-question-details');
+  if (!detailPanel) return;
+  detailPanel.className = `graded-question-card ${containerClass}`;
+  
+  detailPanel.innerHTML = `
+    <div class="graded-question-num-row">
+      <span class="question-number">Question ${q.num}</span>
+      <span class="graded-status-text ${statusClass}">${statusText}</span>
+    </div>
+    <div class="question-body" style="font-size: 16px; margin-bottom: 16px;">
+      ${q.questionText}
+    </div>
+    <div class="options-container" style="margin-bottom: 16px;">
+      ${optsHTML}
+    </div>
+    <div class="practice-explanation-card" style="margin-top: 16px; margin-bottom: 8px;">
+      <p><strong>Correct Answer:</strong> ${q.correctAnswers.join(', ')}</p>
+      ${q.explanation ? `<p>${q.explanation}</p>` : ''}
+    </div>
+  `;
+
+  // Bind and enable/disable navigation buttons outside the card
+  const navContainer = document.getElementById('results-review-nav-buttons');
+  if (navContainer) {
+    navContainer.style.display = 'flex';
+    
+    const prevBtn = document.getElementById('results-prev-btn');
+    const nextBtn = document.getElementById('results-next-btn');
+    
+    if (index === 0) {
+      prevBtn.setAttribute('disabled', 'true');
+      prevBtn.style.opacity = '0.5';
+      prevBtn.style.cursor = 'not-allowed';
+      prevBtn.onclick = null;
+    } else {
+      prevBtn.removeAttribute('disabled');
+      prevBtn.style.opacity = '';
+      prevBtn.style.cursor = '';
+      prevBtn.onclick = () => {
+        showReviewQuestion(index - 1);
+        const prevBubble = document.getElementById(`r-nav-bubble-${index - 1}`);
+        if (prevBubble) prevBubble.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      };
+    }
+    
+    if (index === ae.questions.length - 1) {
+      nextBtn.setAttribute('disabled', 'true');
+      nextBtn.style.opacity = '0.5';
+      nextBtn.style.cursor = 'not-allowed';
+      nextBtn.onclick = null;
+    } else {
+      nextBtn.removeAttribute('disabled');
+      nextBtn.style.opacity = '';
+      nextBtn.style.cursor = '';
+      nextBtn.onclick = () => {
+        showReviewQuestion(index + 1);
+        const nextBubble = document.getElementById(`r-nav-bubble-${index + 1}`);
+        if (nextBubble) nextBubble.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      };
+    }
+  }
+
+  createIconsSafe();
+}
+
+function exitExamSession() {
+  if (confirm('Are you sure you want to exit the exam? Your current progress will be lost.')) {
+    if (state.activeExam.timerInterval) {
+      clearInterval(state.activeExam.timerInterval);
+    }
+    window.location.hash = '#exams';
+    handleRouteChange();
+  }
+}
+
+// ==================== SYLLABUS CONTROLLER ====================
+function setupSyllabusView() {
+  const container = document.getElementById('syllabus-container');
+  container.innerHTML = '<p class="empty-state">Loading syllabus domains...</p>';
+  
+  fetch('study-guide.md')
+    .then(res => {
+      if (!res.ok) throw new Error('Guide file not found');
+      return res.text();
+    })
+    .then(text => {
+      const domains = parseSyllabusMarkdown(text);
+      
+      container.innerHTML = domains.map((domain, idx) => {
+        const letter = String.fromCharCode(65 + idx); // A, B, C, D
+        
+        const subtopicsHTML = domain.subtopics.map(sub => {
+          const listItems = sub.bullets.map(b => `<li>${b}</li>`).join('');
+          return `
+            <div class="subtopic-item">
+              <h4>${sub.title}</h4>
+              <ul>${listItems}</ul>
+            </div>
+          `;
+        }).join('');
+        
+        return `
+          <div class="domain-accordion" id="domain-accordion-${idx}">
+            <div class="domain-header" onclick="toggleDomainAccordion(${idx})">
+              <div class="domain-title-group">
+                <div class="domain-letter-badge">${idx + 1}</div>
+                <div class="domain-text">
+                  <h3>Domain ${idx + 1}: ${domain.title}</h3>
+                  <span>Weight: ${domain.weight || 'N/A'}</span>
+                </div>
+              </div>
+              <i data-lucide="chevron-down"></i>
+            </div>
+            <div class="domain-content">
+              ${subtopicsHTML}
+            </div>
+          </div>
+        `;
+      }).join('');
+      createIconsSafe();
+    })
+    .catch(err => {
+      console.error(err);
+      container.innerHTML = `<p class="empty-state" style="color: var(--danger-color);">Error loading syllabus domains from study-guide.md</p>`;
+    });
+}
+
+function parseSyllabusMarkdown(text) {
+  // Parses domains from study-guide.md
+  // Domains start with "## Domain X:"
+  const domains = [];
+  const sections = text.split(/\n##\s+Domain\s+\d+:\s*/);
+  
+  // The first segment is intro header, slice it off
+  sections.slice(1).forEach(sectionText => {
+    const lines = sectionText.split('\n');
+    const title = lines[0].trim();
+    
+    // Deduce weight from domains list if we can, otherwise default
+    let weight = '20-30%';
+    if (title.toLowerCase().includes('concepts')) weight = '26% of Exam';
+    if (title.toLowerCase().includes('security')) weight = '25% of Exam';
+    if (title.toLowerCase().includes('technology')) weight = '33% of Exam';
+    if (title.toLowerCase().includes('billing')) weight = '16% of Exam';
+    
+    const subtopics = [];
+    let currentSubtopic = null;
+    
+    lines.slice(1).forEach(line => {
+      const subMatch = line.match(/^###\s*(.*)/);
+      if (subMatch) {
+        if (currentSubtopic) {
+          subtopics.push(currentSubtopic);
+        }
+        currentSubtopic = {
+          title: subMatch[1].trim(),
+          bullets: []
+        };
+      } else if (currentSubtopic) {
+        const bulletMatch = line.match(/^\s*[-\*]\s*(.*)/);
+        if (bulletMatch) {
+          currentSubtopic.bullets.push(bulletMatch[1].trim());
+        }
+      }
+    });
+    
+    if (currentSubtopic) {
+      subtopics.push(currentSubtopic);
+    }
+    
+    domains.push({
+      title: title,
+      weight: weight,
+      subtopics: subtopics
+    });
+  });
+  
+  return domains;
+}
+
+window.toggleDomainAccordion = function(index) {
+  const acc = document.getElementById(`domain-accordion-${index}`);
+  if (acc) {
+    acc.classList.toggle('open');
+  }
+};
+
+// ==================== MIND MAP CONTROLLER ====================
+function setupMindmapView() {
+  const iframe = document.getElementById('mindmap-iframe');
+  if (!iframe) return;
+  
+  if (iframe.getAttribute('data-loaded') === 'true') return;
+  
+  fetch('mind-map-aws-ccp.md')
+    .then(res => {
+      if (!res.ok) throw new Error('Mind map file not found');
+      return res.text();
+    })
+    .then(text => {
+      // Replace markdown title with standard HTML header
+      let html = text.replace(/^#\s+Mind\s+Map.*/i, '');
+      iframe.srcdoc = html;
+      iframe.setAttribute('data-loaded', 'true');
+    })
+    .catch(err => {
+      console.error(err);
+      iframe.srcdoc = `
+        <div style="color: var(--danger-color); padding: 20px; font-family: sans-serif; text-align: center; background-color: var(--bg-primary);">
+          <h3>Error Loading Mind Map</h3>
+          <p>Failed to load mind-map-aws-ccp.md from root.</p>
+        </div>
+      `;
+    });
+}

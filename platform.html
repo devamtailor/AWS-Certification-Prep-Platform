@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AWS Cloud Practitioner Prep Hub</title>
+  
+  <!-- Preconnect & Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Style Sheets -->
+  <link rel="stylesheet" href="assets/css/platform.css">
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+  
+  <!-- CDNs for Icons & Markdown Parsing -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+
+  <!-- App Container -->
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-container">
+          <i data-lucide="cloud-lightning" class="logo-icon"></i>
+          <span class="logo-text">AWS CloudPrep</span>
+        </div>
+        <button class="mobile-close-btn" id="mobile-close-btn">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <ul>
+          <li>
+            <a href="#dashboard" class="nav-link active" data-view="dashboard">
+              <i data-lucide="layout-dashboard"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li>
+            <a href="#notes" class="nav-link" data-view="notes">
+              <i data-lucide="book-open"></i>
+              <span>Study Notes</span>
+            </a>
+          </li>
+          <li>
+            <a href="#exams" class="nav-link" data-view="exams">
+              <i data-lucide="file-question"></i>
+              <span>Practice Exams</span>
+            </a>
+          </li>
+          <li>
+            <a href="#syllabus" class="nav-link" data-view="syllabus">
+              <i data-lucide="award"></i>
+              <span>Syllabus Guide</span>
+            </a>
+          </li>
+          <li>
+            <a href="#mindmap" class="nav-link" data-view="mindmap">
+              <i data-lucide="network"></i>
+              <span>Mind Map</span>
+            </a>
+          </li>
+          <li>
+            <button class="nav-link theme-toggle-btn" id="theme-toggle-btn">
+              <i data-lucide="sun" class="sun-icon"></i>
+              <i data-lucide="moon" class="moon-icon"></i>
+              <span class="theme-text">Light Mode</span>
+            </button>
+          </li>
+        </ul>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <button class="reset-progress-btn" id="reset-progress-btn">
+          <i data-lucide="rotate-ccw"></i>
+          <span>Reset Progress</span>
+        </button>
+      </div>
+    </aside>
+    
+    <!-- Main Content Area -->
+    <div class="main-wrapper">
+      
+      <!-- Top Mobile Header -->
+      <header class="mobile-header">
+        <button class="mobile-menu-btn" id="mobile-menu-btn">
+          <i data-lucide="menu"></i>
+        </button>
+        <div class="mobile-logo">
+          <i data-lucide="cloud-lightning" class="logo-icon"></i>
+          <span>AWS CloudPrep</span>
+        </div>
+        <div style="width: 40px;"></div> <!-- Spacer -->
+      </header>
+      
+      <!-- Main Scrollable Screen -->
+      <main class="main-content">
+        
+        <!-- ==================== DASHBOARD VIEW ==================== -->
+        <section id="dashboard-view" class="view-section active">
+          <div class="view-header-banner">
+            <h1>Welcome back, Cloud Practitioner!</h1>
+            <p>Track your learning, review study materials, and take simulated practice tests.</p>
+          </div>
+          
+          <!-- Quick Stats Row -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon-wrapper progress-accent">
+                <i data-lucide="book-open"></i>
+              </div>
+              <div class="stat-info">
+                <h3>Study Progress</h3>
+                <div class="stat-value" id="stats-progress-percent">0%</div>
+                <p id="stats-progress-count">0 of 19 units read</p>
+              </div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-icon-wrapper exams-accent">
+                <i data-lucide="check-square"></i>
+              </div>
+              <div class="stat-info">
+                <h3>Exams Taken</h3>
+                <div class="stat-value" id="stats-exams-completed">0</div>
+                <p>Attempts recorded</p>
+              </div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-icon-wrapper score-accent">
+                <i data-lucide="trending-up"></i>
+              </div>
+              <div class="stat-info">
+                <h3>Average Score</h3>
+                <div class="stat-value" id="stats-average-score">0%</div>
+                <p>Target passing score: 70%</p>
+              </div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-icon-wrapper status-accent">
+                <i data-lucide="award"></i>
+              </div>
+              <div class="stat-info">
+                <h3>Exam Readiness</h3>
+                <div class="stat-value" id="stats-readiness">Not Ready</div>
+                <p id="stats-readiness-sub">Complete notes & pass exams</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="dashboard-content-split">
+            <!-- Continue Learning -->
+            <div class="dashboard-panel panel-left">
+              <h2>Continue Your Prep</h2>
+              <div class="continue-card" id="continue-card">
+                <div class="continue-content">
+                  <span class="badge">Next Recommended Module</span>
+                  <h3 id="continue-title">Loading...</h3>
+                  <p id="continue-description">Ready to begin study</p>
+                  <a href="#notes" class="btn btn-primary" id="continue-btn">Resume Reading</a>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Recent Attempts -->
+            <div class="dashboard-panel panel-right">
+              <h2>Recent Exam Attempts</h2>
+              <div class="recent-exams-table-container">
+                <table class="recent-exams-table">
+                  <thead>
+                    <tr>
+                      <th>Exam Name</th>
+                      <th>Date</th>
+                      <th>Score</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recent-attempts-list">
+                    <tr>
+                      <td colspan="4" class="empty-state">No exam attempts yet. Choose an exam from the sidebar to begin!</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- ==================== STUDY NOTES VIEW ==================== -->
+        <section id="notes-view" class="view-section">
+          <div class="notes-layout">
+            <!-- Sidebar for note selection -->
+            <div class="notes-sidebar">
+              <div class="notes-search-wrapper">
+                <i data-lucide="search"></i>
+                <input type="text" id="notes-search-input" placeholder="Search modules...">
+              </div>
+              <div class="notes-menu-list" id="notes-menu-list">
+                <!-- Javascript populated -->
+              </div>
+            </div>
+            
+            <!-- Active note content container -->
+            <div class="notes-body">
+              <div class="notes-header-actions">
+                <div class="breadcrumbs">
+                  <span>Study Notes</span>
+                  <i data-lucide="chevron-right"></i>
+                  <span id="active-note-breadcrumb">Select a Unit</span>
+                </div>
+                <div class="completion-toggle">
+                  <label class="checkbox-container">
+                    <input type="checkbox" id="note-completed-checkbox">
+                    <span class="checkmark"></span>
+                    <span class="checkbox-label">Mark as Completed</span>
+                  </label>
+                </div>
+              </div>
+              
+              <div class="notes-main-content">
+                <div id="notes-content-placeholder" class="notes-content-markdown">
+                  <div class="empty-notes-state">
+                    <i data-lucide="book-open"></i>
+                    <h2>Select a Study Unit</h2>
+                    <p>Choose a module from the left panel to begin reading the study notes.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Table of Contents Panel -->
+            <div class="notes-toc-panel">
+              <h3>On this page</h3>
+              <div class="toc-links" id="notes-toc-links">
+                <!-- Javascript populated -->
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- ==================== PRACTICE EXAMS VIEW ==================== -->
+        <section id="exams-view" class="view-section">
+          <!-- Main Exams Listing -->
+          <div id="exams-list-container">
+            <div class="exams-welcome-header">
+              <h1>Practice Exam Center</h1>
+              <p>Test your knowledge with 23 realistic practice tests. Each test replicates the actual exam style containing 50-65 questions.</p>
+            </div>
+            <div class="exams-grid" id="exams-grid">
+              <!-- Dynamically Populated -->
+            </div>
+          </div>
+          
+          <!-- Active Exam Screen -->
+          <div id="active-exam-container" style="display: none;">
+            <div class="exam-header-bar">
+              <div class="exam-header-meta">
+                <h2 id="active-exam-title">Practice Exam</h2>
+                <div class="exam-badge" id="exam-mode-badge">Exam Mode</div>
+              </div>
+              
+              <div class="exam-timer-section">
+                <div class="timer-display" id="exam-timer">90:00</div>
+                <button class="btn btn-secondary btn-icon" id="exam-pause-btn" title="Pause Timer">
+                  <i data-lucide="pause" id="pause-icon"></i>
+                </button>
+              </div>
+              
+              <div class="exam-header-actions" style="display: flex; gap: 12px; align-items: center;">
+                <button class="btn btn-success" id="header-submit-btn">Submit Exam</button>
+                <button class="btn btn-outline-danger" id="exam-exit-btn">Exit Test</button>
+              </div>
+            </div>
+            
+            <div class="exam-layout">
+              <!-- Left Grid Navigator -->
+              <div class="exam-sidebar-nav">
+                <h3>Questions</h3>
+                <div class="question-nav-grid" id="question-nav-grid">
+                  <!-- JS populated -->
+                </div>
+                <div class="nav-legend">
+                  <div class="legend-item"><span class="legend-dot current"></span>Active</div>
+                  <div class="legend-item"><span class="legend-dot answered"></span>Answered</div>
+                  <div class="legend-item"><span class="legend-dot flagged"></span>Flagged</div>
+                  <div class="legend-item"><span class="legend-dot"></span>Unanswered</div>
+                </div>
+              </div>
+              
+              <!-- Center Question Box -->
+              <div class="exam-main-panel">
+                <div class="question-card" id="question-card">
+                  <div class="question-header">
+                    <span class="question-number" id="current-question-num">Question 1 of 50</span>
+                    <button class="btn-flag" id="flag-question-btn">
+                      <i data-lucide="flag"></i>
+                      <span>Flag for Review</span>
+                    </button>
+                  </div>
+                  
+                  <div class="question-body" id="current-question-text">
+                    <!-- Dynamic Question text -->
+                  </div>
+                  
+                  <div class="options-container" id="current-options-list">
+                    <!-- Dynamic choices list -->
+                  </div>
+                  
+                  <!-- Practice mode explanation block -->
+                  <div class="practice-explanation-card" id="practice-explanation" style="display: none;">
+                    <div class="explanation-status" id="explanation-status">
+                      <!-- Correct/Incorrect badge -->
+                    </div>
+                    <div class="explanation-text" id="explanation-text-content">
+                      <!-- Explanation content -->
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="exam-action-buttons">
+                  <button class="btn btn-secondary" id="quiz-prev-btn">
+                    <i data-lucide="chevron-left"></i>
+                    <span>Previous</span>
+                  </button>
+                  <button class="btn btn-secondary" id="quiz-check-btn" style="display: none;">Check Answer</button>
+                  <button class="btn btn-primary" id="quiz-next-btn">
+                    <span>Next</span>
+                    <i data-lucide="chevron-right"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+          </div>
+          
+          <!-- Exam Results Screen -->
+          <div id="exam-results-container" style="display: none;">
+            <div class="results-card">
+              <div class="results-header">
+                <div class="score-circle-container">
+                  <div class="score-circle">
+                    <span id="results-score-percent">0%</span>
+                    <span class="score-label" id="results-pass-fail">PASS</span>
+                  </div>
+                </div>
+                <div class="results-header-info">
+                  <h1 id="results-exam-name">Exam Results</h1>
+                  <p id="results-date-string">Completed on July 5, 2026</p>
+                  <div class="results-stats-row">
+                    <div class="r-stat">
+                      <span class="r-val" id="results-correct-count">0</span>
+                      <span class="r-lbl">Correct</span>
+                    </div>
+                    <div class="r-stat">
+                      <span class="r-val" id="results-incorrect-count">0</span>
+                      <span class="r-lbl">Incorrect</span>
+                    </div>
+                    <div class="r-stat">
+                      <span class="r-val" id="results-total-count">0</span>
+                      <span class="r-lbl">Total Questions</span>
+                    </div>
+                    <div class="r-stat">
+                      <span class="r-val" id="results-time-spent">0m</span>
+                      <span class="r-lbl">Time Taken</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="results-split-layout">
+                <!-- Left Navigation Grid -->
+                <div class="results-sidebar-nav">
+                  <div class="results-review-controls">
+                    <h3>Review Navigation</h3>
+                    <div class="filter-buttons">
+                      <button class="btn btn-outline active" data-filter="all">All</button>
+                      <button class="btn btn-outline" data-filter="incorrect">Incorrect</button>
+                      <button class="btn btn-outline" data-filter="flagged">Flagged</button>
+                    </div>
+                  </div>
+                  <div class="results-nav-grid" id="results-nav-grid">
+                    <!-- JS populated grid -->
+                  </div>
+                </div>
+                
+                <!-- Right Details View Panel -->
+                 <div class="results-main-panel">
+                   <div class="graded-question-card-scroll-wrapper" style="flex: 1; min-height: 0; overflow-y: auto; padding-right: 8px;">
+                     <div class="graded-question-card" id="results-active-question-details">
+                       <p class="empty-state">Select a question bubble on the left to review its explanation.</p>
+                     </div>
+                   </div>
+                   
+                   <!-- Pinned bottom navigation for results review -->
+                   <div class="results-review-action-buttons" id="results-review-nav-buttons" style="display: none; justify-content: space-between; border-top: 1px solid var(--border-color); padding-top: 16px; margin-top: 16px; flex-shrink: 0;">
+                     <button class="btn btn-outline btn-sm" id="results-prev-btn">
+                       <i data-lucide="arrow-left" style="width: 14px; height: 14px; margin-right: 4px; vertical-align: middle;"></i> Prev Question
+                     </button>
+                     <button class="btn btn-outline btn-sm" id="results-next-btn">
+                       Next Question <i data-lucide="arrow-right" style="width: 14px; height: 14px; margin-left: 4px; vertical-align: middle;"></i>
+                     </button>
+                   </div>
+                 </div>
+              </div>
+              
+              <div class="results-footer-actions">
+                <a href="#exams" class="btn btn-primary" id="results-back-exams-btn">Back to Test Center</a>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- ==================== SYLLABUS VIEW ==================== -->
+        <section id="syllabus-view" class="view-section">
+          <div class="syllabus-header">
+            <h1>Syllabus Guide & Domain Breakdown</h1>
+            <p>Review the official exam weightings and key domains defined in the syllabus. Click on each domain to expand sub-topics.</p>
+          </div>
+          <div class="syllabus-content-wrapper">
+            <div class="syllabus-container" id="syllabus-container">
+              <!-- Dynamically populated or compiled from study-guide.md -->
+            </div>
+          </div>
+        </section>
+        
+        <!-- ==================== MIND MAP VIEW ==================== -->
+        <section id="mindmap-view" class="view-section">
+          <div class="mindmap-header">
+            <h1>Dynamic Syllabus Mind Map</h1>
+            <p>Interactively explore the structural relationships of the AWS Certified Cloud Practitioner topics. Hover and click nodes to navigate.</p>
+          </div>
+          <div class="mindmap-container">
+            <!-- Renders markmap inside iframe to avoid dependency conflicts -->
+            <iframe src="mind-map-aws-ccp.html" id="mindmap-iframe" class="mindmap-iframe"></iframe>
+          </div>
+        </section>
+        
+      </main>
+    </div>
+  </div>
+
+  <!-- Quiz Submission Modal -->
+  <div class="modal-underlay" id="submit-modal" style="display: none;">
+    <div class="modal-content">
+      <h2>Submit Exam?</h2>
+      <p>Are you sure you want to submit your exam? You have answered <span id="modal-answered-count">0</span> out of <span id="modal-total-count">50</span> questions.</p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="modal-cancel-btn">Cancel</button>
+        <button class="btn btn-success" id="modal-submit-confirm-btn">Confirm & Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reset Progress Modal -->
+  <div class="modal-underlay" id="reset-confirm-modal" style="display: none; z-index: 3000;">
+    <div class="modal-content">
+      <h2 style="color: var(--danger-color);">Reset All Progress?</h2>
+      <p>Are you sure you want to reset all your study progress and exam scores? This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="reset-modal-cancel-btn">Cancel</button>
+        <button class="btn btn-danger" id="reset-modal-confirm-btn" style="background-color: var(--danger-color); color: white;">Confirm Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Client-side Logic Script -->
+  <script src="assets/js/platform.js"></script>
+</body>
+</html>
