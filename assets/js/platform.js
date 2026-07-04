@@ -375,7 +375,12 @@ function renderDashboard() {
   const progressPercent = totalNotes > 0 ? Math.round((completedNotes / totalNotes) * 100) : 0;
   
   document.getElementById('stats-progress-percent').innerText = `${progressPercent}%`;
-  document.getElementById('stats-progress-count').innerText = `${completedNotes} of ${totalNotes} units read`;
+  document.getElementById('stats-progress-count').innerText = `${completedNotes} of ${totalNotes} units completed`;
+  
+  const bentoProgress = document.getElementById('bento-progress-fill');
+  if (bentoProgress) {
+    bentoProgress.style.width = `${progressPercent}%`;
+  }
   
   const attempts = state.examAttempts;
   const examsCompleted = attempts.length;
@@ -388,30 +393,32 @@ function renderDashboard() {
   }
   document.getElementById('stats-average-score').innerText = `${avgScore}%`;
   
-  // Exam readiness calculation
-  let readiness = 'Not Ready';
-  let subText = 'Read study notes & pass tests';
-  if (progressPercent > 50 && avgScore >= 70) {
-    readiness = 'Excellent';
-    subText = 'Highly likely to pass the real exam!';
-  } else if (progressPercent > 30 && avgScore >= 60) {
-    readiness = 'Moderate';
-    subText = 'Keep reviewing incorrect answers';
-  } else if (progressPercent > 10) {
-    readiness = 'Beginning';
-    subText = 'Continue building AWS fundamentals';
-  }
-  
+  // Exam readiness calculation (optional element - guarded)
   const readinessEl = document.getElementById('stats-readiness');
-  readinessEl.innerText = readiness;
-  if (readiness === 'Excellent') {
-    readinessEl.style.color = 'var(--success-color)';
-  } else if (readiness === 'Moderate') {
-    readinessEl.style.color = 'var(--warning-color)';
-  } else {
-    readinessEl.style.color = 'var(--text-primary)';
+  if (readinessEl) {
+    let readiness = 'Not Ready';
+    let subText = 'Complete units & pass practice exams';
+    if (progressPercent > 50 && avgScore >= 70) {
+      readiness = 'Excellent';
+      subText = 'Excellent readiness metrics';
+    } else if (progressPercent > 30 && avgScore >= 60) {
+      readiness = 'Moderate';
+      subText = 'Average readiness. Keep practicing.';
+    } else if (progressPercent > 10) {
+      readiness = 'Beginning';
+      subText = 'Complete more study units';
+    }
+    readinessEl.innerText = readiness;
+    if (readiness === 'Excellent') {
+      readinessEl.style.color = 'var(--success-color)';
+    } else if (readiness === 'Moderate') {
+      readinessEl.style.color = 'var(--warning-color)';
+    } else {
+      readinessEl.style.color = 'var(--text-primary)';
+    }
+    const readinessSubEl = document.getElementById('stats-readiness-sub');
+    if (readinessSubEl) readinessSubEl.innerText = subText;
   }
-  document.getElementById('stats-readiness-sub').innerText = subText;
   
   // Continue learning card
   const nextNote = NOTES_LIST.find(note => !state.notesProgress[note.id]);
@@ -448,6 +455,64 @@ function renderDashboard() {
       `;
     }).join('');
   }
+
+  // Render domain mastery based on real progress
+  renderDomainMastery();
+}
+
+// ==================== DOMAIN MASTERY ====================
+// CCP domains mapped to note IDs
+const DOMAIN_MAP = [
+  {
+    name: 'Cloud Concepts',
+    color: 'domain-color-1',
+    units: ['cloud_computing', 'global_infrastructure']
+  },
+  {
+    name: 'Security & Compliance',
+    color: 'domain-color-2',
+    units: ['iam', 'security_compliance', 'advanced_identity']
+  },
+  {
+    name: 'Technology & Services',
+    color: 'domain-color-3',
+    units: ['ec2', 'ec2_storage', 'elb_asg', 's3', 'databases', 'other_compute',
+            'deploying', 'cloud_integration', 'cloud_monitoring', 'vpc',
+            'machine_learning', 'other_aws_services', 'architecting_and_ecosystem']
+  },
+  {
+    name: 'Billing & Pricing',
+    color: 'domain-color-4',
+    units: ['account_management_billing_support']
+  }
+];
+
+function renderDomainMastery() {
+  const container = document.getElementById('domain-mastery-list');
+  if (!container) return;
+
+  // Domain fill colours mapped to domain index
+  const fillColors = [
+    'var(--accent-color)',   // D1: orange
+    '#f87171',               // D2: red
+    '#60a5fa',               // D3: blue
+    'var(--success-color)'  // D4: green
+  ];
+
+  container.innerHTML = DOMAIN_MAP.map((domain, i) => {
+    const total = domain.units.length;
+    const done = domain.units.filter(u => !!state.notesProgress[u]).length;
+    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+    return `
+      <div class="domain-mastery-item">
+        <span class="domain-title-compact">${domain.name}</span>
+        <div class="mini-progress">
+          <div class="mini-fill" style="width: ${pct}%; background: ${fillColors[i]};"></div>
+        </div>
+        <span style="font-size:11px; color:var(--text-muted); margin-top:2px; display:block; text-align:right;">${pct}% &bull; ${done}/${total} units</span>
+      </div>
+    `;
+  }).join('');
 }
 
 // ==================== STUDY NOTES VIEW CONTROLLER ====================
@@ -490,6 +555,47 @@ function setupNotesView(id) {
     return;
   }
   
+  function stripTopTOCLinks(markdownText) {
+    const lines = markdownText.split('\n');
+    let firstHeadingIndex = -1;
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].trim().startsWith('# ')) {
+        firstHeadingIndex = i;
+        break;
+      }
+    }
+    if (firstHeadingIndex === -1) return markdownText;
+    
+    let currentIndex = firstHeadingIndex + 1;
+    let inTOC = false;
+    let startIndex = -1;
+    let endIndex = -1;
+    
+    while (currentIndex < lines.length) {
+      const line = lines[currentIndex].trim();
+      if (line === '') {
+        currentIndex++;
+        continue;
+      }
+      const isTOCItem = /^(?:-|\*)\s+\[.*\]\(#.*\)/.test(line) || /^\s*(?:-|\*)/.test(lines[currentIndex]);
+      if (isTOCItem) {
+        if (!inTOC) {
+          inTOC = true;
+          startIndex = currentIndex;
+        }
+        endIndex = currentIndex;
+        currentIndex++;
+      } else {
+        break;
+      }
+    }
+    
+    if (startIndex !== -1 && endIndex !== -1) {
+      lines.splice(startIndex, (endIndex - startIndex) + 1);
+    }
+    return lines.join('\n');
+  }
+  
   // Highlight active note button
   document.querySelectorAll('.notes-item-btn').forEach(btn => {
     if (btn.getAttribute('data-id') === id) {
@@ -503,6 +609,19 @@ function setupNotesView(id) {
   const compCheckbox = document.getElementById('note-completed-checkbox');
   compCheckbox.disabled = false;
   compCheckbox.checked = !!state.notesProgress[id];
+  
+  // If the page is loaded directly from the file system, markdown fetches may fail.
+  if (window.location.protocol === 'file:') {
+    document.getElementById('notes-content-placeholder').innerHTML = `
+      <div class="empty-notes-state">
+        <i data-lucide="alert-triangle" style="color: var(--danger-color);"></i>
+        <h2>Local file loading blocked</h2>
+        <p>Markdown files cannot be loaded directly when the page is opened via <code>file://</code>. Run a local HTTP server and open this page with <strong>http://localhost</strong> instead.</p>
+      </div>
+    `;
+    document.getElementById('notes-toc-links').innerHTML = '';
+    return;
+  }
   
   // Fetch note
   const matchedNote = NOTES_LIST.find(n => n.id === id);
@@ -524,8 +643,12 @@ function setupNotesView(id) {
       // Rewrite image pathways (from ../images/ to images/)
       cleanMd = cleanMd.replace(/\.\.\/images\//g, 'images/');
       
+      // Remove duplicate TOC links block from the beginning
+      const strippedMd = stripTopTOCLinks(cleanMd);
+      
       // Parse markdown to HTML
-      const html = typeof marked.parse === 'function' ? marked.parse(cleanMd) : marked(cleanMd);
+      const html = typeof marked.parse === 'function' ? marked.parse(strippedMd) : marked(strippedMd);
+      
       document.getElementById('notes-content-placeholder').innerHTML = html;
       
       // Generate Table of Contents (TOC)
@@ -650,6 +773,16 @@ window.startExamFlow = function(examId, mode) {
   document.getElementById('current-question-text').innerHTML = 'Parsing practice exam questions. Please wait...';
   document.getElementById('current-options-list').innerHTML = '';
   document.getElementById('question-nav-grid').innerHTML = '';
+  
+  if (window.location.protocol === 'file:') {
+    document.getElementById('current-question-text').innerHTML = `
+      <div style="color: var(--danger-color); text-align: center; padding: 20px;">
+        <h3>Local file loading blocked</h3>
+        <p>Practice exam markdown cannot be loaded via <code>file://</code>. Run a local HTTP server and open this page using <strong>http://localhost</strong>.</p>
+      </div>
+    `;
+    return;
+  }
   
   fetch(`practice-exam/practice-exam-${examId}.md`)
     .then(res => {
@@ -1453,30 +1586,108 @@ window.toggleDomainAccordion = function(index) {
 };
 
 // ==================== MIND MAP CONTROLLER ====================
+// Structured topic tree per CCP domain — navigates to in-app study notes
+const MINDMAP_TREE = [
+  {
+    domain: 'Domain 1: Cloud Concepts',
+    colorClass: 'domain-color-1',
+    units: [
+      { id: 'cloud_computing', label: 'Cloud Computing' },
+      { id: 'global_infrastructure', label: 'Global Infrastructure' }
+    ]
+  },
+  {
+    domain: 'Domain 2: Security & Compliance',
+    colorClass: 'domain-color-2',
+    units: [
+      { id: 'iam', label: 'IAM: Identity & Access Management' },
+      { id: 'security_compliance', label: 'Security & Compliance' },
+      { id: 'advanced_identity', label: 'Advanced Identity' }
+    ]
+  },
+  {
+    domain: 'Domain 3: Technology & Services',
+    colorClass: 'domain-color-3',
+    units: [
+      { id: 'ec2', label: 'EC2: Virtual Machines' },
+      { id: 'ec2_storage', label: 'EC2 Instance Storage' },
+      { id: 'elb_asg', label: 'Elastic Load Balancing & Auto Scaling' },
+      { id: 's3', label: 'Amazon S3' },
+      { id: 'databases', label: 'Databases & Analytics' },
+      { id: 'other_compute', label: 'Other Compute (Lambda, ECS, Fargate)' },
+      { id: 'deploying', label: 'Deploying & Managing Infrastructure' },
+      { id: 'cloud_integration', label: 'Cloud Integration (SQS, SNS, MQ)' },
+      { id: 'cloud_monitoring', label: 'Cloud Monitoring (CloudWatch, CloudTrail)' },
+      { id: 'vpc', label: 'VPC & Networking' },
+      { id: 'machine_learning', label: 'Machine Learning Services' },
+      { id: 'other_aws_services', label: 'Other AWS Services' },
+      { id: 'architecting_and_ecosystem', label: 'Architecting & Ecosystem' }
+    ]
+  },
+  {
+    domain: 'Domain 4: Billing, Pricing & Support',
+    colorClass: 'domain-color-4',
+    units: [
+      { id: 'account_management_billing_support', label: 'Account Management, Billing & Support' }
+    ]
+  }
+];
+
 function setupMindmapView() {
-  const iframe = document.getElementById('mindmap-iframe');
-  if (!iframe) return;
-  
-  if (iframe.getAttribute('data-loaded') === 'true') return;
-  
-  fetch('mind-map-aws-ccp.md')
-    .then(res => {
-      if (!res.ok) throw new Error('Mind map file not found');
-      return res.text();
-    })
-    .then(text => {
-      // Replace markdown title with standard HTML header
-      let html = text.replace(/^#\s+Mind\s+Map.*/i, '');
-      iframe.srcdoc = html;
-      iframe.setAttribute('data-loaded', 'true');
-    })
-    .catch(err => {
-      console.error(err);
-      iframe.srcdoc = `
-        <div style="color: var(--danger-color); padding: 20px; font-family: sans-serif; text-align: center; background-color: var(--bg-primary);">
-          <h3>Error Loading Mind Map</h3>
-          <p>Failed to load mind-map-aws-ccp.md from root.</p>
+  const container = document.getElementById('mindmap-container');
+  if (!container) return;
+
+  // Always rebuild to reflect latest progress
+  const tree = document.createElement('div');
+  tree.className = 'topic-tree';
+
+  MINDMAP_TREE.forEach((domain, di) => {
+    const totalUnits = domain.units.length;
+    const doneUnits = domain.units.filter(u => !!state.notesProgress[u.id]).length;
+    const pct = totalUnits > 0 ? Math.round((doneUnits / totalUnits) * 100) : 0;
+
+    const card = document.createElement('div');
+    card.className = 'topic-domain-card';
+    // Open first domain by default
+    if (di === 0) card.classList.add('open');
+
+    const header = document.createElement('div');
+    header.className = 'topic-domain-header';
+    header.innerHTML = `
+      <div class="topic-domain-title">
+        <div class="topic-domain-badge ${domain.colorClass}">${di + 1}</div>
+        <div>
+          <div class="topic-domain-name">${domain.domain}</div>
+          <div class="topic-domain-meta">${doneUnits}/${totalUnits} units complete &bull; ${pct}%</div>
         </div>
+      </div>
+      <svg class="topic-domain-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    `;
+    header.addEventListener('click', () => card.classList.toggle('open'));
+
+    const unitsList = document.createElement('div');
+    unitsList.className = 'topic-units-list';
+
+    domain.units.forEach(unit => {
+      const completed = !!state.notesProgress[unit.id];
+      const item = document.createElement('div');
+      item.className = `topic-unit-item${completed ? ' completed' : ''}`;
+      item.innerHTML = `
+        <div class="topic-unit-dot"></div>
+        <span class="topic-unit-label">${unit.label}</span>
+        <span class="topic-unit-status ${completed ? 'done' : 'todo'}">${completed ? '✓ Done' : 'To Do'}</span>
       `;
+      item.addEventListener('click', () => {
+        window.location.hash = `#notes?id=${unit.id}`;
+      });
+      unitsList.appendChild(item);
     });
+
+    card.appendChild(header);
+    card.appendChild(unitsList);
+    tree.appendChild(card);
+  });
+
+  container.innerHTML = '';
+  container.appendChild(tree);
 }

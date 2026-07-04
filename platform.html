@@ -28,7 +28,7 @@
       <div class="sidebar-header">
         <div class="logo-container">
           <i data-lucide="cloud-lightning" class="logo-icon"></i>
-          <span class="logo-text">AWS CloudPrep</span>
+          <span class="logo-text">Cloud Control</span>
         </div>
         <button class="mobile-close-btn" id="mobile-close-btn">
           <i data-lucide="x"></i>
@@ -74,15 +74,14 @@
               <span class="theme-text">Light Mode</span>
             </button>
           </li>
+          <li>
+            <button class="nav-link reset-progress-btn" id="reset-progress-btn" style="border: none; text-align: left; width: 100%; font-family: inherit;">
+              <i data-lucide="rotate-ccw"></i>
+              <span>Reset Progress</span>
+            </button>
+          </li>
         </ul>
       </nav>
-      
-      <div class="sidebar-footer">
-        <button class="reset-progress-btn" id="reset-progress-btn">
-          <i data-lucide="rotate-ccw"></i>
-          <span>Reset Progress</span>
-        </button>
-      </div>
     </aside>
     
     <!-- Main Content Area -->
@@ -95,7 +94,7 @@
         </button>
         <div class="mobile-logo">
           <i data-lucide="cloud-lightning" class="logo-icon"></i>
-          <span>AWS CloudPrep</span>
+          <span>Cloud Control</span>
         </div>
         <div style="width: 40px;"></div> <!-- Spacer -->
       </header>
@@ -105,93 +104,98 @@
         
         <!-- ==================== DASHBOARD VIEW ==================== -->
         <section id="dashboard-view" class="view-section active">
-          <div class="view-header-banner">
-            <h1>Welcome back, Cloud Practitioner!</h1>
-            <p>Track your learning, review study materials, and take simulated practice tests.</p>
+          <!-- Hero Section: Editorial Typography & Massive Headline -->
+          <div class="mission-hero-banner">
+            <h1 class="editorial-headline">Dashboard</h1>
+            <p class="mission-description">Track your study progress, explore cloud core modules, and take simulated practice tests to assess your exam readiness.</p>
           </div>
           
-          <!-- Quick Stats Row -->
-          <div class="stats-grid">
-            <div class="stat-card">
-              <div class="stat-icon-wrapper progress-accent">
-                <i data-lucide="book-open"></i>
+          <!-- Bento Grid Layout -->
+          <div class="mission-bento-grid">
+            
+            <!-- Bento Card 1: ACTIVE MISSION STATE (Primary stat) -->
+            <div class="bento-card span-3 highlight-card">
+              <div class="bento-card-header">
+                <span class="bento-label">ACTIVE TRACK CONFIGURATION</span>
+                <i data-lucide="shield-check" class="bento-header-icon text-orange"></i>
               </div>
-              <div class="stat-info">
-                <h3>Study Progress</h3>
-                <div class="stat-value" id="stats-progress-percent">0%</div>
-                <p id="stats-progress-count">0 of 19 units read</p>
+              <div class="mission-configuration-content">
+                <div class="current-track-badge">AWS CERTIFIED CLOUD PRACTITIONER</div>
+                
+                <div class="mission-telemetry-row">
+                  <div class="telemetry-readout">
+                    <span class="readout-value" id="stats-progress-percent">0%</span>
+                    <span class="readout-label">STUDY PROGRESS</span>
+                  </div>
+                  <div class="telemetry-readout">
+                    <span class="readout-value" id="stats-exams-completed">0</span>
+                    <span class="readout-label">EXAMS TAKEN</span>
+                  </div>
+                  <div class="telemetry-readout">
+                    <span class="readout-value" id="stats-average-score">0%</span>
+                    <span class="readout-label">AVERAGE SCORE</span>
+                  </div>
+                </div>
+                
+                <div class="progress-bar-container">
+                  <div class="progress-bar-fill" id="bento-progress-fill" style="width: 0%;"></div>
+                </div>
+                <div class="progress-sub-text" id="stats-progress-count">0 of 19 units completed</div>
               </div>
             </div>
             
-            <div class="stat-card">
-              <div class="stat-icon-wrapper exams-accent">
-                <i data-lucide="check-square"></i>
+            <!-- Bento Card 3: CORE COMPUTE DEPLOYMENT (Resume Action) -->
+            <div class="bento-card span-2">
+              <div class="bento-card-header">
+                <span class="bento-label">RECOMMENDED NEXT UNIT</span>
+                <i data-lucide="terminal" class="bento-header-icon text-green"></i>
               </div>
-              <div class="stat-info">
-                <h3>Exams Taken</h3>
-                <div class="stat-value" id="stats-exams-completed">0</div>
-                <p>Attempts recorded</p>
-              </div>
-            </div>
-            
-            <div class="stat-card">
-              <div class="stat-icon-wrapper score-accent">
-                <i data-lucide="trending-up"></i>
-              </div>
-              <div class="stat-info">
-                <h3>Average Score</h3>
-                <div class="stat-value" id="stats-average-score">0%</div>
-                <p>Target passing score: 70%</p>
-              </div>
-            </div>
-            
-            <div class="stat-card">
-              <div class="stat-icon-wrapper status-accent">
-                <i data-lucide="award"></i>
-              </div>
-              <div class="stat-info">
-                <h3>Exam Readiness</h3>
-                <div class="stat-value" id="stats-readiness">Not Ready</div>
-                <p id="stats-readiness-sub">Complete notes & pass exams</p>
-              </div>
-            </div>
-          </div>
-          
-          <div class="dashboard-content-split">
-            <!-- Continue Learning -->
-            <div class="dashboard-panel panel-left">
-              <h2>Continue Your Prep</h2>
-              <div class="continue-card" id="continue-card">
-                <div class="continue-content">
-                  <span class="badge">Next Recommended Module</span>
-                  <h3 id="continue-title">Loading...</h3>
-                  <p id="continue-description">Ready to begin study</p>
-                  <a href="#notes" class="btn btn-primary" id="continue-btn">Resume Reading</a>
+              <div class="continue-card-bento" id="continue-card">
+                <span class="badge bento-action-badge">Next Target Unit</span>
+                <h3 id="continue-title" class="bento-action-title">Loading...</h3>
+                <p id="continue-description" class="bento-action-desc">Ready to begin study</p>
+                <div class="continue-action-row">
+                  <a href="#notes" class="btn btn-primary btn-deploy" id="continue-btn">Resume Reading</a>
                 </div>
               </div>
             </div>
             
-            <!-- Recent Attempts -->
-            <div class="dashboard-panel panel-right">
-              <h2>Recent Exam Attempts</h2>
+            <!-- Bento Card 4: DOMAIN MASTERY OBSERVABILITY -->
+            <div class="bento-card span-1">
+              <div class="bento-card-header">
+                <span class="bento-label">DOMAIN MASTERY</span>
+                <i data-lucide="activity" class="bento-header-icon text-purple"></i>
+              </div>
+              <div class="domain-mastery-list" id="domain-mastery-list">
+                <!-- JS populated -->
+              </div>
+            </div>
+            
+            <!-- Bento Card 5: TELEMETRY ARCHIVE (Recent Attempts) -->
+            <div class="bento-card span-3">
+              <div class="bento-card-header">
+                <span class="bento-label">RECENT EXAM ATTEMPTS</span>
+                <i data-lucide="cpu" class="bento-header-icon text-muted"></i>
+              </div>
               <div class="recent-exams-table-container">
                 <table class="recent-exams-table">
                   <thead>
                     <tr>
-                      <th>Exam Name</th>
-                      <th>Date</th>
-                      <th>Score</th>
-                      <th>Status</th>
+                      <th>EXAM NAME</th>
+                      <th>DATE TAKEN</th>
+                      <th>SCORE</th>
+                      <th>STATUS</th>
                     </tr>
                   </thead>
                   <tbody id="recent-attempts-list">
                     <tr>
-                      <td colspan="4" class="empty-state">No exam attempts yet. Choose an exam from the sidebar to begin!</td>
+                      <td colspan="4" class="empty-state">No exam attempts recorded yet. Start an exam to track performance.</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
             </div>
+            
           </div>
         </section>
         
@@ -435,12 +439,11 @@
         <!-- ==================== MIND MAP VIEW ==================== -->
         <section id="mindmap-view" class="view-section">
           <div class="mindmap-header">
-            <h1>Dynamic Syllabus Mind Map</h1>
-            <p>Interactively explore the structural relationships of the AWS Certified Cloud Practitioner topics. Hover and click nodes to navigate.</p>
+            <h1>Topic Mind Map</h1>
+            <p>Visual overview of all AWS Cloud Practitioner topics. Click any node to open the corresponding study notes.</p>
           </div>
-          <div class="mindmap-container">
-            <!-- Renders markmap inside iframe to avoid dependency conflicts -->
-            <iframe src="mind-map-aws-ccp.html" id="mindmap-iframe" class="mindmap-iframe"></iframe>
+          <div class="mindmap-container" id="mindmap-container">
+            <!-- JS-rendered interactive topic tree -->
           </div>
         </section>
         
