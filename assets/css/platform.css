@@ -1,4 +1,4 @@
-/* AWS CloudPrep Platform Styling */
+﻿/* AWS CloudPrep Platform Styling */
 
 /* ==================== DESIGN TOKENS & THEMES ==================== */
 :root {
@@ -1892,7 +1892,7 @@ body {
   padding-top: 20px;
 }
 
-/* ==================== 4. EXAM RESULTS VIEW — replaced by enhancement layer below ==================== */
+/* ==================== 4. EXAM RESULTS VIEW â€” replaced by enhancement layer below ==================== */
 .results-card { display: contents; } /* neutralised */
 
 /* ==================== 5. SYLLABUS / ACCORDION ==================== */
@@ -4370,12 +4370,13 @@ table {
 .drawer-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.5);
+  /* No blur — it blurs the entire page content behind the drawer */
+  backdrop-filter: none;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s ease;
-  z-index: 1999;
+  transition: opacity 0.25s ease;
+  z-index: 1799; /* below drawers (1800) but above content */
 }
 .drawer-backdrop.active {
   opacity: 1;
@@ -4389,7 +4390,6 @@ table {
 }
 
 @media (max-width: 900px) {
-  /* Show mobile actions */
   .mobile-notes-action-bar,
   .mobile-exam-action-bar {
     display: flex !important;
@@ -4397,26 +4397,27 @@ table {
     bottom: 0;
     left: 0;
     right: 0;
-    background: rgba(15, 15, 12, 0.92);
+    background: rgba(15, 15, 12, 0.96);
     backdrop-filter: blur(12px);
     border-top: 1px solid var(--border-color);
-    padding: 12px 16px;
+    padding: 10px 12px;
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
     z-index: 1000;
-    gap: 12px;
-    justify-content: center;
+    gap: 8px;
+    justify-content: stretch;
+    align-items: center;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
   }
-  
+
   [data-theme="light"] .mobile-notes-action-bar,
   [data-theme="light"] .mobile-exam-action-bar {
-    background: rgba(255, 253, 248, 0.92);
+    background: rgba(255, 253, 248, 0.96);
   }
 
-  .mobile-notes-action-bar .btn,
-  .mobile-exam-action-bar .btn {
+  /* Notes bar: just one button, centred */
+  .mobile-notes-action-bar .btn {
     flex: 1;
-    max-width: 200px;
-    min-height: 38px;
+    min-height: 40px;
     font-size: 13px;
     padding: 6px 12px;
     display: flex;
@@ -4424,6 +4425,36 @@ table {
     justify-content: center;
     gap: 8px;
     margin: 0;
+    max-width: 200px;
+  }
+
+  /* Exam/Results bar: Questions toggle (grows) + Prev + Next */
+  .mobile-exam-action-bar .btn-mob-toggle {
+    flex: 1;                  /* takes remaining space */
+    min-height: 40px;
+    font-size: 13px;
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 0;
+  }
+
+  .mobile-exam-action-bar .btn-mob-nav {
+    flex: 0 0 52px;           /* fixed small width */
+    min-height: 40px;
+    padding: 6px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .mobile-exam-action-bar .btn-mob-nav[disabled] {
+    opacity: 0.35;
+    pointer-events: none;
   }
 
   /* Transform sidebars into slide-up drawers */
@@ -4753,7 +4784,7 @@ table {
   background: linear-gradient(90deg, var(--accent-color), var(--accent-hover), transparent);
 }
 
-/* Exams welcome header — same treatment */
+/* Exams welcome header â€” same treatment */
 .exams-welcome-header {
   background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
   border: 1px solid var(--border-color);
@@ -5082,7 +5113,7 @@ table {
 
 
 /* ============================================================
-   RESULTS VIEW — FULL REDESIGN
+   RESULTS VIEW â€” FULL REDESIGN
    ============================================================ */
 
 /* Container */
@@ -5620,7 +5651,7 @@ table {
 }
 
 /* ============================================================
-   RESULTS — RESPONSIVE
+   RESULTS â€” RESPONSIVE
    ============================================================ */
 
 /* Tablet: stack body to single column */
@@ -5748,7 +5779,7 @@ table {
   }
 }
 
-/* Mobile action bar — show prev/next + nav toggle */
+/* Mobile action bar â€” show prev/next + nav toggle */
 @media (max-width: 1100px) {
   .results-body {
     padding-bottom: 72px; /* room for sticky bar */
@@ -5756,11 +5787,15 @@ table {
 }
 
 
+
 /* ============================================================
-   ISSUE FIXES: exam nav, results nav, mobile header, history
+   EXAM & RESULTS — DEFINITIVE LAYOUT FIX
+   Nav buttons are FIXED to the bottom of the viewport.
+   They never move regardless of question length.
+   On mobile, same fixed bar with Questions + Prev + Next.
    ============================================================ */
 
-/* ---------- 1. Mobile header — only show when sidebar is a drawer ---------- */
+/* ----- Mobile header: only visible when sidebar is a drawer ----- */
 @media (min-width: 1101px) {
   .mobile-header { display: none !important; }
 }
@@ -5776,28 +5811,25 @@ table {
   }
 }
 
-/* ---------- 2. Exam layout: fixed sidebar, question panel scrolls its card ---------- */
-/* Reset the broken auto-column rule */
+/* ----- Exam layout: sidebar left, question right ----- */
 .exam-layout {
   display: grid !important;
-  grid-template-columns: 220px 1fr !important;
+  grid-template-columns: 200px 1fr !important;
   gap: 16px !important;
+  align-items: start !important;
   height: auto !important;
   overflow: visible !important;
-  align-items: start !important;
 }
 
-/* Sidebar sticks at top, shrinks to content height — no overflow scroll */
 .exam-sidebar-nav {
   height: auto !important;
   max-height: none !important;
   overflow: visible !important;
+  position: sticky !important;
+  top: 16px !important;
   align-self: start !important;
-  position: sticky;
-  top: 16px;
 }
 
-/* Question grid: wrap bubbles — 6 per row at 32px each fills 220px sidebar nicely */
 .question-nav-grid {
   display: grid !important;
   grid-template-columns: repeat(6, 1fr) !important;
@@ -5815,94 +5847,68 @@ table {
   border-radius: 5px !important;
 }
 
-/* Question panel: flex column, card scrolls independently */
 .exam-main-panel {
   display: flex !important;
   flex-direction: column !important;
-  gap: 0 !important;
+  min-width: 0 !important;
   height: auto !important;
   overflow: visible !important;
-  min-width: 0 !important;
 }
 
-/* Card scrolls, text wraps — fixed max-height relative to viewport */
 .question-card {
-  max-height: calc(100vh - 220px) !important;
-  overflow-y: auto !important;
   min-width: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
 }
 
-/* ---------- 3. Exam nav bar: sticky bottom, always same position ---------- */
-/* Remove the old .exam-action-buttons reference — replaced by .exam-nav-bar */
+/* ----- Exam nav bar: FIXED to viewport bottom — never moves ----- */
 .exam-action-buttons { display: none !important; }
 
 .exam-nav-bar {
   display: flex !important;
-  align-items: center;
-  justify-content: space-between;
+  align-items: center !important;
+  justify-content: space-between !important;
   gap: 12px;
-  position: sticky;
-  bottom: 0;
-  z-index: 200;
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--border-color);
-  border-top: 1px solid var(--border-color);
-  border-bottom: none;
-  border-radius: 10px 10px 0 0;
-  padding: 12px 20px;
-  margin-top: 8px;
+  position: fixed !important;
+  bottom: 0 !important;
+  left: var(--sidebar-w, 260px) !important;
+  right: 0 !important;
+  z-index: 500 !important;
+  padding: 12px 24px !important;
+  background: var(--bg-secondary) !important;
+  border-top: 1px solid var(--border-color) !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  border-radius: 0 !important;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.15) !important;
+}
+
+/* Pad the bottom of the exam view so content isn't hidden behind the fixed bar */
+.active-exam-shell {
+  padding-bottom: 72px !important;
 }
 
 .exam-nav-bar .btn { min-width: 110px; }
 .exam-nav-bar .btn[disabled] { opacity: 0.4; pointer-events: none; }
 
-/* ---------- 3b. Results nav bar: same sticky bottom ---------- */
-.results-nav-bar {
-  display: flex !important;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  position: sticky;
-  bottom: 0;
-  z-index: 200;
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--border-color);
-  border-top: 1px solid var(--border-color);
-  border-bottom: none;
-  border-radius: 10px 10px 0 0;
-  padding: 12px 20px;
-  margin-top: 8px;
-}
-
-.results-nav-bar .btn { min-width: 110px; }
-.results-nav-bar .btn[disabled] { opacity: 0.4; pointer-events: none; }
-.results-nav-counter {
-  font-family: monospace;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-muted);
-  white-space: nowrap;
-}
-
-/* Results layout: sidebar wraps, question frame scrolls */
+/* ----- Results layout ----- */
 .results-body {
   display: grid !important;
-  grid-template-columns: 220px 1fr !important;
+  grid-template-columns: 200px 1fr !important;
   gap: 16px !important;
+  align-items: start !important;
   height: auto !important;
   overflow: visible !important;
-  align-items: start !important;
 }
 
 .results-sidebar-nav {
   height: auto !important;
   max-height: none !important;
   overflow: visible !important;
+  position: sticky !important;
+  top: 16px !important;
   align-self: start !important;
-  position: sticky;
-  top: 16px;
 }
 
 .results-nav-grid {
@@ -5924,19 +5930,107 @@ table {
 .results-main-panel {
   display: flex !important;
   flex-direction: column !important;
+  min-width: 0 !important;
   height: auto !important;
   overflow: visible !important;
-  min-width: 0 !important;
 }
 
 .results-question-frame {
-  max-height: calc(100vh - 240px) !important;
-  overflow-y: auto !important;
-  border-radius: 10px !important;
   min-width: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  border-radius: 10px !important;
 }
 
-/* ---------- 4. Exam history on exam cards ---------- */
+/* ----- Results nav bar: also FIXED to viewport bottom ----- */
+.results-nav-bar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px;
+  position: fixed !important;
+  bottom: 0 !important;
+  left: var(--sidebar-w, 260px) !important;
+  right: 0 !important;
+  z-index: 500 !important;
+  padding: 12px 24px !important;
+  background: var(--bg-secondary) !important;
+  border-top: 1px solid var(--border-color) !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  border-radius: 0 !important;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.15) !important;
+}
+
+.results-shell {
+  padding-bottom: 72px !important;
+}
+
+.results-nav-bar .btn { min-width: 110px; }
+.results-nav-bar .btn[disabled] { opacity: 0.4; pointer-events: none; }
+
+.results-nav-counter {
+  font-family: monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* ----- Mobile (≤900px) ----- */
+@media (max-width: 900px) {
+  /* Stack to single column — sidebar becomes a drawer */
+  .exam-layout,
+  .results-body {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Sidebar hidden from flow on mobile — shown as a drawer via JS */
+  .exam-sidebar-nav,
+  .results-sidebar-nav {
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    top: auto !important;
+    z-index: 1800 !important;
+    border-radius: 16px 16px 0 0 !important;
+    max-height: 65vh !important;
+    overflow-y: auto !important;
+    transform: translateY(100%) !important;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    background: var(--bg-secondary) !important;
+    padding: 20px 16px !important;
+  }
+
+  .exam-sidebar-nav.drawer-open,
+  .results-sidebar-nav.drawer-open {
+    transform: translateY(0) !important;
+  }
+
+  .question-nav-grid {
+    grid-template-columns: repeat(auto-fill, minmax(36px, 1fr)) !important;
+  }
+
+  .results-nav-grid {
+    grid-template-columns: repeat(auto-fill, minmax(36px, 1fr)) !important;
+  }
+
+  /* Hide desktop fixed bars on mobile — mobile-exam-action-bar takes over */
+  .exam-nav-bar,
+  .results-nav-bar {
+    display: none !important;
+  }
+
+  /* Content doesn't need the desktop bottom padding on mobile */
+  .active-exam-shell,
+  .results-shell {
+    padding-bottom: 72px !important; /* room for mobile action bar */
+  }
+}
+
+/* ----- Exam history on exam cards ----- */
 .exam-history {
   border-top: 1px solid var(--border-color);
   padding-top: 10px;
@@ -6003,42 +6097,77 @@ table {
 .exam-detail-type { font-size: 12px; color: var(--text-muted); }
 .exam-detail-score { font-size: 13px; font-weight: 600; color: var(--text-primary); }
 
-/* ---------- Responsive: tablet & mobile ---------- */
-@media (max-width: 900px) {
-  .exam-layout,
-  .results-body {
-    grid-template-columns: 1fr !important;
+
+/* ============================================================
+   FINAL UI FIXES
+   ============================================================ */
+
+/* --- 1. Desktop exam/results nav bar: buttons grouped on the right --- */
+.exam-nav-bar,
+.results-nav-bar {
+  justify-content: flex-end !important;
+  gap: 10px !important;
+}
+
+/* Prev gets a slightly muted style so Next (primary) is the visual anchor */
+#quiz-prev-btn,
+#results-prev-btn {
+  background: var(--bg-tertiary) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-secondary) !important;
+  min-width: 90px !important;
+}
+
+#quiz-prev-btn:hover,
+#results-prev-btn:hover {
+  color: var(--text-primary) !important;
+  border-color: var(--text-muted) !important;
+}
+
+/* Counter stays between the two buttons */
+.results-nav-counter {
+  order: 0; /* sits between prev and next naturally */
+  margin: 0 4px;
+}
+
+/* Next stays primary orange */
+#quiz-next-btn,
+#results-next-btn {
+  min-width: 90px !important;
+}
+
+/* Check Answer sits between them */
+#quiz-check-btn {
+  order: 0;
+}
+
+/* --- 2. Mobile header: only show the hamburger, hide everything else --- */
+@media (max-width: 1100px) {
+  .mobile-logo,
+  .mobile-header > div:last-child {   /* the spacer div */
+    display: none !important;
   }
 
-  .exam-sidebar-nav,
-  .results-sidebar-nav {
-    position: static !important;
-    max-height: 200px !important;
-    overflow-y: auto !important;
+  .mobile-header {
+    /* Only the menu button remains — left-align it */
+    justify-content: flex-start !important;
+    padding: 0 10px !important;
+    height: 48px !important;
+    background: transparent !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
   }
 
-  .question-nav-grid {
-    grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)) !important;
+  /* Remove the orange accent bar on mobile header */
+  .mobile-header::after {
+    display: none !important;
   }
 
-  .results-nav-grid {
-    grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)) !important;
-  }
-
-  .question-card,
-  .results-question-frame {
-    max-height: none !important;
-  }
-
-  .exam-nav-bar,
-  .results-nav-bar {
-    border-radius: 0 !important;
-    padding: 10px 14px;
-  }
-
-  .exam-nav-bar .btn,
-  .results-nav-bar .btn {
-    min-width: 80px;
-    font-size: 13px;
+  .mobile-menu-btn {
+    border: none !important;
+    background: none !important;
+    color: var(--text-primary) !important;
+    width: 40px;
+    height: 40px;
   }
 }

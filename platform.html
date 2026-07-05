@@ -28,7 +28,7 @@
       <div class="sidebar-header">
         <div class="logo-container">
           <i data-lucide="cloud-lightning" class="logo-icon"></i>
-          <span class="logo-text">Cloud Control</span>
+          <span class="logo-text">AWS CertPrep</span>
         </div>
         <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" title="Collapse Sidebar">
           <i data-lucide="chevron-left"></i>
@@ -110,8 +110,7 @@
           <!-- Hero Section: Editorial Typography & Massive Headline -->
           <div class="mission-hero-banner">
             <div class="hero-copy-block">
-              <span class="system-status-indicator"><span class="pulse-dot"></span>CLF-C02 PREPARATION SYSTEM</span>
-              <h1 class="editorial-headline">AWS Cloud Practitioner Command Center</h1>
+              <h1 class="editorial-headline">AWS CERTIFICATION PREPARATION PLATFORM</h1>
               <p class="mission-description">A focused workspace for reading, recall, and timed practice. Track what is complete, what is weak, and what deserves your next hour.</p>
             </div>
             <div class="hero-cert-card" aria-label="Certification track">
@@ -372,30 +371,29 @@
           </div>
           
           <!-- Active Exam Screen -->
-          <div id="active-exam-container" style="display: none;">
+          <div id="active-exam-container" style="display: none;" class="active-exam-shell">
+
+            <!-- Top bar -->
             <div class="exam-header-bar">
               <div class="exam-header-meta">
                 <h2 id="active-exam-title">Practice Exam</h2>
                 <div class="exam-badge" id="exam-mode-badge">Exam Mode</div>
               </div>
-              
               <div class="exam-timer-section">
                 <div class="timer-display" id="exam-timer">90:00</div>
                 <button class="btn btn-secondary btn-icon" id="exam-pause-btn" title="Pause Timer">
                   <i data-lucide="pause" id="pause-icon"></i>
                 </button>
               </div>
-              
-              <div class="exam-header-actions" style="display: flex; gap: 12px; align-items: center;">
+              <div class="exam-header-actions" style="display:flex;gap:12px;align-items:center;">
                 <button class="btn btn-success" id="header-submit-btn">Submit Exam</button>
                 <button class="btn btn-outline-danger" id="exam-exit-btn">Exit Test</button>
               </div>
             </div>
-            
-            <!-- Question grid + content side by side -->
+
+            <!-- Middle: sidebar + question (grows to fill) -->
             <div class="exam-layout">
-              <!-- Left: question number grid (no scroll — wraps naturally) -->
-              <div class="exam-sidebar-nav">
+              <div class="exam-sidebar-nav" id="exam-sidebar-nav">
                 <h3>Questions</h3>
                 <div class="question-nav-grid" id="question-nav-grid"></div>
                 <div class="nav-legend">
@@ -405,8 +403,6 @@
                   <div class="legend-item"><span class="legend-dot"></span>Unanswered</div>
                 </div>
               </div>
-              
-              <!-- Right: question card only (scrolls independently) -->
               <div class="exam-main-panel">
                 <div class="question-card" id="question-card">
                   <div class="question-header">
@@ -418,7 +414,7 @@
                   </div>
                   <div class="question-body" id="current-question-text"></div>
                   <div class="options-container" id="current-options-list"></div>
-                  <div class="practice-explanation-card" id="practice-explanation" style="display: none;">
+                  <div class="practice-explanation-card" id="practice-explanation" style="display:none;">
                     <div class="explanation-status" id="explanation-status"></div>
                     <div class="explanation-text" id="explanation-text-content"></div>
                   </div>
@@ -426,30 +422,35 @@
               </div>
             </div>
 
-            <!-- Prev / Next / Check — fixed bar OUTSIDE the exam layout so it never moves -->
+            <!-- Bottom nav row — plain flex row, NOT a floating box -->
             <div class="exam-nav-bar">
               <button class="btn btn-secondary" id="quiz-prev-btn">
-                <i data-lucide="chevron-left"></i>
-                <span>Prev</span>
+                <i data-lucide="chevron-left"></i> Prev
               </button>
-              <button class="btn btn-secondary" id="quiz-check-btn" style="display: none;">Check Answer</button>
+              <button class="btn btn-secondary" id="quiz-check-btn" style="display:none;">Check Answer</button>
               <button class="btn btn-primary" id="quiz-next-btn">
-                <span>Next</span>
+                Next <i data-lucide="chevron-right"></i>
+              </button>
+            </div>
+
+            <!-- Mobile: Questions drawer toggle + Prev/Next always visible -->
+            <div class="mobile-exam-action-bar">
+              <button class="btn btn-secondary btn-mob-nav" id="quiz-prev-btn-mobile" disabled>
+                <i data-lucide="chevron-left"></i>
+              </button>
+              <button class="btn btn-secondary btn-mob-toggle" id="mobile-toggle-exam-nav">
+                <i data-lucide="grid"></i>
+                <span>Questions</span>
+              </button>
+              <button class="btn btn-primary btn-mob-nav" id="quiz-next-btn-mobile">
                 <i data-lucide="chevron-right"></i>
               </button>
             </div>
 
-            <!-- Mobile sticky bar -->
-            <div class="mobile-exam-action-bar">
-              <button class="btn btn-secondary" id="mobile-toggle-exam-nav">
-                <i data-lucide="grid"></i>
-                <span>Questions</span>
-              </button>
-            </div>
-          </div> <!-- end active-exam-container -->
+          </div>
           
           <!-- Exam Results Screen -->
-          <div id="exam-results-container" style="display: none;">
+          <div id="exam-results-container" style="display: none;" class="results-shell">
 
             <!-- Results Hero Header -->
             <div class="results-hero">
@@ -494,7 +495,7 @@
                 </a>
                 <button class="btn btn-primary" id="results-retake-btn">
                   <i data-lucide="rotate-ccw"></i>
-                  Retake Exam
+                  Retake
                 </button>
               </div>
             </div>
@@ -527,26 +528,24 @@
             <!-- Prev / Next — fixed bar OUTSIDE the scrolling area so it never moves -->
             <div class="results-nav-bar" id="results-review-nav-buttons" style="display:none;">
               <button class="btn btn-secondary" id="results-prev-btn">
-                <i data-lucide="arrow-left"></i>
-                <span>Prev</span>
+                <i data-lucide="arrow-left"></i> Prev
               </button>
               <span class="results-nav-counter" id="results-nav-counter">1 / 50</span>
               <button class="btn btn-secondary" id="results-next-btn">
-                <span>Next</span>
-                <i data-lucide="arrow-right"></i>
+                Next <i data-lucide="arrow-right"></i>
               </button>
             </div>
 
-            <!-- Mobile sticky bar — single toggle for question drawer -->
+            <!-- Mobile: drawer toggle + Prev/Next always visible -->
             <div class="mobile-exam-action-bar">
-              <button class="btn btn-secondary" id="mobile-toggle-results-nav">
+              <button class="btn btn-secondary btn-mob-nav" id="results-prev-btn-mobile" disabled>
+                <i data-lucide="arrow-left"></i>
+              </button>
+              <button class="btn btn-secondary btn-mob-toggle" id="mobile-toggle-results-nav">
                 <i data-lucide="grid"></i>
                 <span>Questions</span>
               </button>
-              <button class="btn btn-secondary" id="results-prev-btn-mobile" disabled>
-                <i data-lucide="arrow-left"></i>
-              </button>
-              <button class="btn btn-secondary" id="results-next-btn-mobile">
+              <button class="btn btn-secondary btn-mob-nav" id="results-next-btn-mobile">
                 <i data-lucide="arrow-right"></i>
               </button>
             </div>

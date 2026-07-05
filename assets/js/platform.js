@@ -189,6 +189,26 @@ function initEventListeners() {
   const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
   const sidebar = document.getElementById('sidebar');
   const chevronIcon = sidebarToggleBtn ? sidebarToggleBtn.querySelector('i') : null;
+
+  function updateNavBarOffset() {
+    // On mobile (≤900px) the nav bars are hidden, no offset needed
+    if (window.innerWidth <= 900) {
+      document.documentElement.style.setProperty('--sidebar-w', '0px');
+      return;
+    }
+    // On tablet where sidebar is a drawer overlay (≤1100px), also 0
+    if (window.innerWidth <= 1100) {
+      document.documentElement.style.setProperty('--sidebar-w', '0px');
+      return;
+    }
+    const collapsed = sidebar && sidebar.classList.contains('collapsed');
+    document.documentElement.style.setProperty('--sidebar-w', collapsed ? '64px' : '260px');
+  }
+
+  // Set on load
+  updateNavBarOffset();
+  window.addEventListener('resize', updateNavBarOffset);
+
   if (sidebarToggleBtn && sidebar) {
     // Restore persisted collapse state
     if (localStorage.getItem('aws_prep_sidebar_collapsed') === 'true') {
@@ -202,6 +222,7 @@ function initEventListeners() {
         chevronIcon.setAttribute('data-lucide', isCollapsed ? 'chevron-right' : 'chevron-left');
         createIconsSafe();
       }
+      updateNavBarOffset();
     });
   }
   
@@ -1081,11 +1102,17 @@ function initActiveExamUI() {
   ae.currentIndex = 0;
   showQuestion(0);
   
-  // Bind actions
+  // Bind actions — desktop buttons
   document.getElementById('quiz-prev-btn').onclick = prevQuestion;
   document.getElementById('quiz-next-btn').onclick = nextQuestion;
   document.getElementById('quiz-check-btn').onclick = checkQuestionAnswer;
   document.getElementById('flag-question-btn').onclick = toggleFlag;
+
+  // Bind mobile Prev/Next buttons
+  const mobPrev = document.getElementById('quiz-prev-btn-mobile');
+  const mobNext = document.getElementById('quiz-next-btn-mobile');
+  if (mobPrev) mobPrev.onclick = prevQuestion;
+  if (mobNext) mobNext.onclick = nextQuestion;
   
   const quizSubmitBtn = document.getElementById('quiz-submit-btn');
   if (quizSubmitBtn) {
@@ -1181,13 +1208,22 @@ function showQuestion(index) {
   // Hide explanation block
   document.getElementById('practice-explanation').style.display = 'none';
   
-  // Enable/Disable navigation buttons
-  document.getElementById('quiz-prev-btn').disabled = index === 0;
-  
-  if (index === ae.questions.length - 1) {
+  // Enable/Disable navigation buttons — desktop + mobile in sync
+  const isFirst = index === 0;
+  const isLast = index === ae.questions.length - 1;
+
+  document.getElementById('quiz-prev-btn').disabled = isFirst;
+  const mobPrev = document.getElementById('quiz-prev-btn-mobile');
+  if (mobPrev) mobPrev.disabled = isFirst;
+
+  if (isLast) {
     document.getElementById('quiz-next-btn').style.display = 'none';
+    const mobNext = document.getElementById('quiz-next-btn-mobile');
+    if (mobNext) { mobNext.disabled = true; mobNext.style.opacity = '0.4'; }
   } else {
     document.getElementById('quiz-next-btn').style.display = 'inline-flex';
+    const mobNext = document.getElementById('quiz-next-btn-mobile');
+    if (mobNext) { mobNext.disabled = false; mobNext.style.opacity = ''; }
   }
   
   // Configure Practice Mode check button
