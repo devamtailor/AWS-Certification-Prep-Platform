@@ -256,7 +256,7 @@ function initEventListeners() {
           localStorage.removeItem('aws_prep_exam_attempts');
           state.notesProgress = {};
           state.examAttempts = [];
-          window.location.href = 'platform.html#dashboard';
+          window.location.hash = '#dashboard';
           window.location.reload();
         };
       }
