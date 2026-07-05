@@ -6257,3 +6257,99 @@ body .main-content {
   background-color: rgba(16, 185, 129, 0.18);
 }
 
+
+/* ============================================================
+   MOBILE INLINE MODULE LIST + UNIT COMPLETED BADGE
+   ============================================================ */
+
+/* Clean "Done" badge — replaces the old emoji ✔️ Completed */
+.unit-completed-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: var(--success-color);
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 999px;
+  padding: 2px 8px;
+  margin-left: auto;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Completed note item — subtle left accent */
+.notes-item-btn.completed {
+  border-left-color: var(--success-color) !important;
+  opacity: 0.85;
+}
+
+/* Mobile inline module list */
+.mobile-module-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 4px 0 16px;
+}
+
+.mobile-module-list-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 0 4px 16px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.mobile-module-list-label strong {
+  color: var(--text-secondary);
+}
+
+.mobile-module-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 4px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  font-family: var(--font-body);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-module-item:last-child {
+  border-bottom: none;
+}
+
+.mobile-module-item:active {
+  background: var(--bg-tertiary);
+}
+
+.mobile-module-item.completed {
+  opacity: 0.75;
+}
+
+.mobile-module-num {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  min-width: 44px;
+}
+
+.mobile-module-title {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--text-primary);
+}
+
+/* Header actions hidden via JS when no note is open on mobile */

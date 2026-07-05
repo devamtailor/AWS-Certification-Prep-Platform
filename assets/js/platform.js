@@ -279,12 +279,14 @@ function initEventListeners() {
 
   // Slide-up drawer menus on touch devices
   let activeDrawer = null;
+  let drawerOpenedAt = 0;
 
   function openDrawer(panelEl) {
     closeDrawer();
     if (!panelEl) return;
     panelEl.classList.add('drawer-open');
     activeDrawer = panelEl;
+    drawerOpenedAt = Date.now();
     const backdrop = document.getElementById('drawer-backdrop');
     if (backdrop) backdrop.classList.add('active');
   }
@@ -294,13 +296,16 @@ function initEventListeners() {
       activeDrawer.classList.remove('drawer-open');
       activeDrawer = null;
     }
+    drawerOpenedAt = 0;
     const backdrop = document.getElementById('drawer-backdrop');
     if (backdrop) backdrop.classList.remove('active');
     document.body.classList.remove('drawer-is-open');
   }
 
+  // Close on tap-outside — 300ms guard prevents the opening click from instantly closing
   document.addEventListener('click', (e) => {
     if (!activeDrawer) return;
+    if (Date.now() - drawerOpenedAt < 300) return;
     if (activeDrawer.contains(e.target)) return;
     if (e.target.closest('#mobile-toggle-exam-nav') ||
         e.target.closest('#mobile-toggle-results-nav') ||
@@ -655,13 +660,37 @@ function setupNotesView(id) {
   renderNotesMenu();
   
   if (!id) {
-    document.getElementById('notes-content-placeholder').innerHTML = `
-      <div class="empty-notes-state">
-        <i data-lucide="book-open"></i>
-        <h2>Select a Study Unit</h2>
-        <p>Choose a module from the left panel to begin reading the study notes.</p>
-      </div>
-    `;
+    const isMobile = window.innerWidth <= 900;
+
+    if (isMobile) {
+      // On mobile the sidebar doesn't exist in the flow — show module list inline
+      // Also hide the "Mark as Completed" header since no note is open
+      const headerActions = document.querySelector('.notes-header-actions');
+      if (headerActions) headerActions.style.display = 'none';
+
+      document.getElementById('notes-content-placeholder').innerHTML = `
+        <div class="mobile-module-list">
+          <p class="mobile-module-list-label">Tap a unit to begin reading, or use the <strong>Select Module</strong> button below</p>
+          ${NOTES_LIST.map((note, index) => {
+            const isCompleted = !!state.notesProgress[note.id];
+            return `<button class="mobile-module-item${isCompleted ? ' completed' : ''}" onclick="window.location.hash='#notes?id=${note.id}'">
+              <span class="mobile-module-num">Unit ${index + 1}</span>
+              <span class="mobile-module-title">${note.title}</span>
+              ${isCompleted ? '<span class="unit-completed-badge">Done</span>' : ''}
+            </button>`;
+          }).join('')}
+        </div>
+      `;
+    } else {
+      document.getElementById('notes-content-placeholder').innerHTML = `
+        <div class="empty-notes-state">
+          <i data-lucide="book-open"></i>
+          <h2>Select a Study Unit</h2>
+          <p>Choose a module from the left panel to begin reading the study notes.</p>
+        </div>
+      `;
+    }
+
     document.getElementById('note-completed-checkbox').checked = false;
     document.getElementById('note-completed-checkbox').disabled = true;
     document.getElementById('active-note-breadcrumb').innerText = 'Select a Unit';
@@ -722,6 +751,10 @@ function setupNotesView(id) {
   const compCheckbox = document.getElementById('note-completed-checkbox');
   compCheckbox.disabled = false;
   compCheckbox.checked = !!state.notesProgress[id];
+
+  // Restore the header actions bar (may have been hidden on mobile module list view)
+  const headerActions = document.querySelector('.notes-header-actions');
+  if (headerActions) headerActions.style.display = '';
   
   // Warn if page is loaded locally via file:// protocol
   if (window.location.protocol === 'file:') {
