@@ -384,13 +384,14 @@ body {
 }
 
 .btn-success {
-  background-color: var(--success-color);
-  color: white;
+  background-color: var(--accent-color);
+  color: #0f0a00;
+  font-weight: 700;
 }
 .btn-success:hover {
-  filter: brightness(0.95);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
-  transform: translateY(-2px);
+  background-color: var(--accent-hover);
+  box-shadow: 0 4px 12px var(--accent-glow);
+  transform: translateY(-1px);
 }
 
 .btn-icon {
@@ -3086,8 +3087,9 @@ textarea {
 }
 
 .btn-success {
-  background: var(--success-color);
-  color: #07110b;
+  background: var(--accent-color);
+  color: #0f0a00;
+  font-weight: 700;
 }
 
 .btn-outline-danger {
@@ -4366,21 +4368,25 @@ table {
   }
 }
 
-/* Drawer Backdrop for slide-up mobile drawers */
+/* Drawer Backdrop — invisible, no effects, no pointer events ever */
 .drawer-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  /* No blur — it blurs the entire page content behind the drawer */
+  background: transparent;
   backdrop-filter: none;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.25s ease;
-  z-index: 1799; /* below drawers (1800) but above content */
+  z-index: 1900;
 }
 .drawer-backdrop.active {
-  opacity: 1;
-  pointer-events: auto;
+  opacity: 0; /* stays invisible — tap-outside handled by JS */
+}
+
+/* No blur on main content — removed entirely */
+body.drawer-is-open .main-content,
+body .main-content {
+  filter: none !important;
+  transition: none !important;
 }
 
 /* Mobile Action Bars */
@@ -4465,10 +4471,11 @@ table {
     position: fixed !important;
     left: 0;
     right: 0;
-    bottom: -100% !important; /* Start offscreen */
+    bottom: -100% !important;
     width: 100% !important;
     height: auto !important;
-    max-height: 75vh !important;
+    /* Leave room for the mobile action bar at the bottom */
+    max-height: calc(70vh - 60px) !important;
     background: var(--bg-card) !important;
     border-top: 1px solid var(--border-color) !important;
     border-radius: 16px 16px 0 0 !important;
@@ -4476,17 +4483,18 @@ table {
     transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5) !important;
     overflow-y: auto !important;
-    padding: 24px 20px 48px !important;
+    /* Bottom padding = action bar height so last row of bubbles isn't hidden */
+    padding: 20px 16px 70px !important;
     top: auto !important;
     display: block !important;
   }
 
-  /* When drawer is open, slide it up */
+  /* When drawer is open, slide it up — sits above action bar */
   .notes-sidebar.drawer-open,
   .notes-toc-panel.drawer-open,
   .exam-sidebar-nav.drawer-open,
   .results-sidebar-nav.drawer-open {
-    bottom: 0 !important;
+    bottom: 60px !important; /* sit above the mobile action bar */
   }
 
   /* Padding at the bottom of main scroll wrappers to prevent content from being hidden behind sticky action bars */
@@ -5788,186 +5796,191 @@ table {
 
 
 
+
 /* ============================================================
-   EXAM & RESULTS — DEFINITIVE LAYOUT FIX
-   Nav buttons are FIXED to the bottom of the viewport.
-   They never move regardless of question length.
-   On mobile, same fixed bar with Questions + Prev + Next.
+   EXAM & RESULTS — FINAL LAYOUT
+   Desktop: sidebar sticky left, fixed nav bar bottom-right.
+   Mobile: sidebar is a slide-up drawer (existing system),
+           mobile-exam-action-bar has Prev + Questions + Next.
    ============================================================ */
 
-/* ----- Mobile header: only visible when sidebar is a drawer ----- */
-@media (min-width: 1101px) {
-  .mobile-header { display: none !important; }
-}
-@media (max-width: 1100px) {
-  .mobile-header {
-    display: flex;
-    position: sticky;
-    top: 0;
-    z-index: 1200;
-    height: 52px;
-    padding: 0 12px;
-    flex-shrink: 0;
-  }
-}
-
-/* ----- Exam layout: sidebar left, question right ----- */
-.exam-layout {
-  display: grid !important;
-  grid-template-columns: 200px 1fr !important;
-  gap: 16px !important;
-  align-items: start !important;
-  height: auto !important;
-  overflow: visible !important;
-}
-
-.exam-sidebar-nav {
-  height: auto !important;
-  max-height: none !important;
-  overflow: visible !important;
-  position: sticky !important;
-  top: 16px !important;
-  align-self: start !important;
-}
-
-.question-nav-grid {
-  display: grid !important;
-  grid-template-columns: repeat(6, 1fr) !important;
-  gap: 5px !important;
-  overflow: visible !important;
-  flex: none !important;
-  min-height: 0 !important;
-}
-
-.q-nav-bubble {
-  width: 100% !important;
-  height: auto !important;
-  aspect-ratio: 1 !important;
-  font-size: 11px !important;
-  border-radius: 5px !important;
-}
-
-.exam-main-panel {
-  display: flex !important;
-  flex-direction: column !important;
-  min-width: 0 !important;
-  height: auto !important;
-  overflow: visible !important;
-}
-
-.question-card {
-  min-width: 0 !important;
-  max-height: none !important;
-  overflow: visible !important;
-}
-
-/* ----- Exam nav bar: FIXED to viewport bottom — never moves ----- */
+/* --- Remove old inline button row --- */
 .exam-action-buttons { display: none !important; }
 
-.exam-nav-bar {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 12px;
-  position: fixed !important;
-  bottom: 0 !important;
-  left: var(--sidebar-w, 260px) !important;
-  right: 0 !important;
-  z-index: 500 !important;
-  padding: 12px 24px !important;
-  background: var(--bg-secondary) !important;
-  border-top: 1px solid var(--border-color) !important;
-  border-left: none !important;
-  border-right: none !important;
-  border-bottom: none !important;
-  border-radius: 0 !important;
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.15) !important;
+/* --- Desktop (>900px): two-column layout --- */
+@media (min-width: 901px) {
+
+  .exam-layout {
+    display: grid !important;
+    grid-template-columns: 200px 1fr !important;
+    gap: 16px !important;
+    align-items: start !important;
+    overflow: visible !important;
+  }
+
+  /* Sidebar sticks in view while question scrolls */
+  .exam-sidebar-nav {
+    position: sticky !important;
+    top: 16px !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    align-self: start !important;
+    transform: none !important;
+    bottom: auto !important;
+  }
+
+  .question-nav-grid {
+    display: grid !important;
+    grid-template-columns: repeat(6, 1fr) !important;
+    gap: 5px !important;
+    overflow: visible !important;
+  }
+
+  .q-nav-bubble {
+    width: 100% !important;
+    aspect-ratio: 1 !important;
+    font-size: 11px !important;
+    border-radius: 5px !important;
+    height: auto !important;
+  }
+
+  .exam-main-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    min-width: 0 !important;
+    overflow: visible !important;
+  }
+
+  .question-card {
+    min-width: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* Results layout — same pattern */
+  .results-body {
+    display: grid !important;
+    grid-template-columns: 200px 1fr !important;
+    gap: 16px !important;
+    align-items: start !important;
+    overflow: visible !important;
+  }
+
+  .results-sidebar-nav {
+    position: sticky !important;
+    top: 16px !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    align-self: start !important;
+    transform: none !important;
+    bottom: auto !important;
+  }
+
+  .results-nav-grid {
+    display: grid !important;
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 5px !important;
+    overflow: visible !important;
+  }
+
+  .r-nav-bubble {
+    width: 100% !important;
+    aspect-ratio: 1 !important;
+    border-radius: 5px !important;
+    font-size: 11px !important;
+    height: auto !important;
+  }
+
+  .results-main-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    min-width: 0 !important;
+    overflow: visible !important;
+  }
+
+  .results-question-frame {
+    min-width: 0 !important;
+    overflow: visible !important;
+    border-radius: 10px !important;
+  }
+
+  /* Fixed nav bars — always at bottom, never scroll */
+  .exam-nav-bar {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 10px !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: var(--sidebar-w, 260px) !important;
+    right: 0 !important;
+    z-index: 500 !important;
+    padding: 11px 24px !important;
+    background: var(--bg-secondary) !important;
+    border-top: 1px solid var(--border-color) !important;
+    border-radius: 0 !important;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1) !important;
+  }
+
+  .results-nav-bar {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 10px !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: var(--sidebar-w, 260px) !important;
+    right: 0 !important;
+    z-index: 500 !important;
+    padding: 11px 24px !important;
+    background: var(--bg-secondary) !important;
+    border-top: 1px solid var(--border-color) !important;
+    border-radius: 0 !important;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1) !important;
+  }
+
+  /* Pad content so fixed bar doesn't cover it */
+  .active-exam-shell,
+  .results-shell { padding-bottom: 68px; }
 }
 
-/* Pad the bottom of the exam view so content isn't hidden behind the fixed bar */
-.active-exam-shell {
-  padding-bottom: 72px !important;
+/* --- Mobile (≤900px): sidebar is a drawer, nav bars hidden --- */
+@media (max-width: 900px) {
+  /* Single column — sidebar is out of flow (handled by drawer system at line ~4460) */
+  .exam-layout,
+  .results-body {
+    display: block !important;
+  }
+
+  /* Sidebar is handled as a drawer by the CSS at line ~4460 — no overrides needed */
+
+  .question-nav-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)) !important;
+    gap: 6px !important;
+  }
+
+  .results-nav-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)) !important;
+    gap: 6px !important;
+  }
+
+  /* Desktop fixed bars hidden — mobile-exam-action-bar handles Prev/Next */
+  .exam-nav-bar,
+  .results-nav-bar { display: none !important; }
+
+  /* Pad for mobile action bar */
+  .active-exam-shell,
+  .results-shell { padding-bottom: 68px; }
 }
 
-.exam-nav-bar .btn { min-width: 110px; }
-.exam-nav-bar .btn[disabled] { opacity: 0.4; pointer-events: none; }
+/* --- Nav button styles --- */
+.exam-nav-bar .btn,
+.results-nav-bar .btn { min-width: 88px; }
 
-/* ----- Results layout ----- */
-.results-body {
-  display: grid !important;
-  grid-template-columns: 200px 1fr !important;
-  gap: 16px !important;
-  align-items: start !important;
-  height: auto !important;
-  overflow: visible !important;
-}
-
-.results-sidebar-nav {
-  height: auto !important;
-  max-height: none !important;
-  overflow: visible !important;
-  position: sticky !important;
-  top: 16px !important;
-  align-self: start !important;
-}
-
-.results-nav-grid {
-  display: grid !important;
-  grid-template-columns: repeat(5, 1fr) !important;
-  gap: 5px !important;
-  overflow: visible !important;
-  flex: none !important;
-}
-
-.r-nav-bubble {
-  width: 100% !important;
-  height: auto !important;
-  aspect-ratio: 1 !important;
-  border-radius: 5px !important;
-  font-size: 11px !important;
-}
-
-.results-main-panel {
-  display: flex !important;
-  flex-direction: column !important;
-  min-width: 0 !important;
-  height: auto !important;
-  overflow: visible !important;
-}
-
-.results-question-frame {
-  min-width: 0 !important;
-  max-height: none !important;
-  overflow: visible !important;
-  border-radius: 10px !important;
-}
-
-/* ----- Results nav bar: also FIXED to viewport bottom ----- */
-.results-nav-bar {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 12px;
-  position: fixed !important;
-  bottom: 0 !important;
-  left: var(--sidebar-w, 260px) !important;
-  right: 0 !important;
-  z-index: 500 !important;
-  padding: 12px 24px !important;
-  background: var(--bg-secondary) !important;
-  border-top: 1px solid var(--border-color) !important;
-  border-left: none !important;
-  border-right: none !important;
-  border-bottom: none !important;
-  border-radius: 0 !important;
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.15) !important;
-}
-
-.results-shell {
-  padding-bottom: 72px !important;
-}
-
-.results-nav-bar .btn { min-width: 110px; }
+.exam-nav-bar .btn[disabled],
 .results-nav-bar .btn[disabled] { opacity: 0.4; pointer-events: none; }
 
 .results-nav-counter {
@@ -5976,61 +5989,94 @@ table {
   font-weight: 700;
   color: var(--text-muted);
   white-space: nowrap;
+  margin: 0 2px;
 }
 
-/* ----- Mobile (≤900px) ----- */
+/* --- Mobile header: hamburger only --- */
+@media (max-width: 1100px) {
+  .mobile-header {
+    justify-content: flex-start !important;
+    padding: 0 10px !important;
+    height: 48px !important;
+    background: transparent !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+  }
+
+  .mobile-header::after { display: none !important; }
+
+  .mobile-logo,
+  .mobile-header > div:last-child { display: none !important; }
+
+  .mobile-menu-btn {
+    border: none !important;
+    background: none !important;
+    color: var(--text-primary) !important;
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* --- Exam header bar compact on mobile --- */
 @media (max-width: 900px) {
-  /* Stack to single column — sidebar becomes a drawer */
-  .exam-layout,
-  .results-body {
-    grid-template-columns: 1fr !important;
+  .exam-header-bar {
+    display: grid !important;
+    grid-template-columns: 1fr auto auto !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 8px 12px !important;
+    flex-direction: unset !important;
   }
 
-  /* Sidebar hidden from flow on mobile — shown as a drawer via JS */
-  .exam-sidebar-nav,
-  .results-sidebar-nav {
-    position: fixed !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    top: auto !important;
-    z-index: 1800 !important;
-    border-radius: 16px 16px 0 0 !important;
-    max-height: 65vh !important;
-    overflow-y: auto !important;
-    transform: translateY(100%) !important;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    background: var(--bg-secondary) !important;
-    padding: 20px 16px !important;
+  .exam-header-meta { gap: 6px !important; min-width: 0; flex-wrap: nowrap !important; }
+
+  .exam-header-meta h2 {
+    font-size: 14px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 110px;
   }
 
-  .exam-sidebar-nav.drawer-open,
-  .results-sidebar-nav.drawer-open {
-    transform: translateY(0) !important;
+  .exam-badge {
+    font-size: 9px !important;
+    padding: 2px 5px !important;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
-  .question-nav-grid {
-    grid-template-columns: repeat(auto-fill, minmax(36px, 1fr)) !important;
+  .exam-timer-section { gap: 5px !important; flex-shrink: 0; }
+
+  .timer-display {
+    font-size: 14px !important;
+    padding: 3px 7px !important;
+    min-width: 58px !important;
   }
 
-  .results-nav-grid {
-    grid-template-columns: repeat(auto-fill, minmax(36px, 1fr)) !important;
+  #exam-pause-btn {
+    width: 30px !important;
+    height: 30px !important;
+    padding: 0 !important;
+    flex-shrink: 0;
   }
 
-  /* Hide desktop fixed bars on mobile — mobile-exam-action-bar takes over */
-  .exam-nav-bar,
-  .results-nav-bar {
-    display: none !important;
+  .exam-header-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 5px !important;
+    flex-shrink: 0;
   }
 
-  /* Content doesn't need the desktop bottom padding on mobile */
-  .active-exam-shell,
-  .results-shell {
-    padding-bottom: 72px !important; /* room for mobile action bar */
+  #header-submit-btn,
+  #exam-exit-btn {
+    font-size: 11px !important;
+    padding: 5px 8px !important;
+    min-height: 30px !important;
+    white-space: nowrap;
   }
 }
 
-/* ----- Exam history on exam cards ----- */
+/* --- Exam history on exam cards --- */
 .exam-history {
   border-top: 1px solid var(--border-color);
   padding-top: 10px;
@@ -6038,7 +6084,6 @@ table {
   flex-direction: column;
   gap: 4px;
 }
-
 .exam-history-label {
   font-size: 10px;
   font-weight: 700;
@@ -6048,16 +6093,13 @@ table {
   margin-bottom: 4px;
   display: block;
 }
-
 .exam-history-row {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 12px;
 }
-
 .exam-history-date { color: var(--text-muted); flex-shrink: 0; min-width: 50px; }
-
 .exam-history-mode {
   font-size: 10px;
   font-weight: 700;
@@ -6065,13 +6107,10 @@ table {
   border-radius: 999px;
   flex-shrink: 0;
 }
-
 .exam-history-mode.pass  { background: rgba(16,185,129,0.12); color: var(--success-color); }
 .exam-history-mode.fail  { background: rgba(239,68,68,0.12);  color: var(--danger-color); }
 .exam-history-mode.study { background: var(--accent-glow);    color: var(--accent-color); }
-
 .exam-history-score { font-weight: 700; color: var(--text-primary); flex: 1; }
-
 .btn-view-result {
   background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
@@ -6086,88 +6125,57 @@ table {
   transition: var(--transition-smooth);
   flex-shrink: 0;
 }
-
 .btn-view-result:hover {
   background: var(--accent-glow);
   border-color: rgba(255,153,0,0.3);
   color: var(--accent-color);
 }
-
 .btn-view-result i { width: 13px; height: 13px; }
 .exam-detail-type { font-size: 12px; color: var(--text-muted); }
 .exam-detail-score { font-size: 13px; font-weight: 600; color: var(--text-primary); }
 
-
 /* ============================================================
-   FINAL UI FIXES
+   REMOVE TAP HIGHLIGHT & BUTTON FLASH
    ============================================================ */
-
-/* --- 1. Desktop exam/results nav bar: buttons grouped on the right --- */
-.exam-nav-bar,
-.results-nav-bar {
-  justify-content: flex-end !important;
-  gap: 10px !important;
+* {
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* Prev gets a slightly muted style so Next (primary) is the visual anchor */
-#quiz-prev-btn,
-#results-prev-btn {
-  background: var(--bg-tertiary) !important;
-  border-color: var(--border-color) !important;
-  color: var(--text-secondary) !important;
-  min-width: 90px !important;
+.btn,
+.q-nav-bubble,
+.r-nav-bubble,
+.notes-item-btn,
+.btn-mob-nav,
+.btn-mob-toggle,
+.btn-view-result,
+.btn-flag,
+.nav-link,
+.domain-accordion .domain-header,
+.topic-domain-header {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  outline: none;
 }
 
-#quiz-prev-btn:hover,
-#results-prev-btn:hover {
-  color: var(--text-primary) !important;
-  border-color: var(--text-muted) !important;
+.btn:focus-visible,
+.q-nav-bubble:focus-visible,
+.r-nav-bubble:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
 }
 
-/* Counter stays between the two buttons */
-.results-nav-counter {
-  order: 0; /* sits between prev and next naturally */
-  margin: 0 4px;
-}
-
-/* Next stays primary orange */
-#quiz-next-btn,
-#results-next-btn {
-  min-width: 90px !important;
-}
-
-/* Check Answer sits between them */
-#quiz-check-btn {
-  order: 0;
-}
-
-/* --- 2. Mobile header: only show the hamburger, hide everything else --- */
+/* Mobile header — always stuck to top, never scrolls away */
 @media (max-width: 1100px) {
-  .mobile-logo,
-  .mobile-header > div:last-child {   /* the spacer div */
-    display: none !important;
-  }
-
   .mobile-header {
-    /* Only the menu button remains — left-align it */
-    justify-content: flex-start !important;
-    padding: 0 10px !important;
-    height: 48px !important;
-    background: transparent !important;
-    border-bottom: none !important;
-    box-shadow: none !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 1200 !important;
   }
 
-  /* Remove the orange accent bar on mobile header */
-  .mobile-header::after {
-    display: none !important;
-  }
-
-  .mobile-menu-btn {
-    border: none !important;
-    background: none !important;
-    color: var(--text-primary) !important;
-    width: 40px;
-    height: 40px;
+  /* Push main content down so it starts below the fixed header */
+  .main-content {
+    padding-top: 60px !important;
   }
 }

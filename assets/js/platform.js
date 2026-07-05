@@ -276,7 +276,6 @@ function initEventListeners() {
     activeDrawer = panelEl;
     const backdrop = document.getElementById('drawer-backdrop');
     if (backdrop) backdrop.classList.add('active');
-    document.body.style.overflow = 'hidden';
   }
 
   function closeDrawer() {
@@ -286,13 +285,23 @@ function initEventListeners() {
     }
     const backdrop = document.getElementById('drawer-backdrop');
     if (backdrop) backdrop.classList.remove('active');
-    document.body.style.overflow = '';
+    document.body.classList.remove('drawer-is-open');
   }
 
-  const drawerBackdrop = document.getElementById('drawer-backdrop');
-  if (drawerBackdrop) {
-    drawerBackdrop.addEventListener('click', closeDrawer);
-  }
+  // Close drawer when tapping outside it (document-level, not via backdrop overlay)
+  document.addEventListener('click', (e) => {
+    if (!activeDrawer) return;
+    // If tap is inside the drawer or on any toggle button, ignore
+    if (activeDrawer.contains(e.target)) return;
+    if (e.target.closest('#mobile-toggle-exam-nav') ||
+        e.target.closest('#mobile-toggle-results-nav') ||
+        e.target.closest('#mobile-toggle-notes-sidebar') ||
+        e.target.closest('#mobile-toggle-notes-toc')) return;
+    closeDrawer();
+  }); // capture: false (default) — fires AFTER target element handlers
+
+  // Remove the old backdrop click handler — backdrop has pointer-events:none now
+  // (no drawerBackdrop.addEventListener needed)
 
   const mobileToggleNotesSidebar = document.getElementById('mobile-toggle-notes-sidebar');
   if (mobileToggleNotesSidebar) {
@@ -326,10 +335,15 @@ function initEventListeners() {
     });
   }
 
-  // Auto-close drawer when a question nav bubble is tapped on mobile
+  // Close drawer automatically after tapping a question bubble, notes item, or TOC link
   document.addEventListener('click', (e) => {
-    if (activeDrawer && (e.target.closest('.q-nav-bubble') || e.target.closest('.r-nav-bubble'))) {
-      setTimeout(closeDrawer, 180);
+    if (!activeDrawer) return;
+    if (e.target.closest('.q-nav-bubble') ||
+        e.target.closest('.r-nav-bubble') ||
+        e.target.closest('.notes-item-btn') ||
+        e.target.closest('.toc-links a') ||
+        e.target.closest('.toc-link')) {
+      setTimeout(closeDrawer, 150);
     }
   });
 
@@ -352,17 +366,35 @@ function initEventListeners() {
     });
   }
   
-  // Mark note completed checkbox
+  // Mark note completed checkbox — get active note ID from URL, not DOM query
   const compCheckbox = document.getElementById('note-completed-checkbox');
   if (compCheckbox) {
     compCheckbox.addEventListener('change', (e) => {
-      const activeBtn = document.querySelector('.notes-item-btn.active');
-      if (activeBtn) {
-        const id = activeBtn.getAttribute('data-id');
-        state.notesProgress[id] = e.target.checked;
+      // Get the active note ID reliably from the current hash
+      const hash = window.location.hash || '';
+      const parts = hash.split('?id=');
+      const activeId = parts[1] ? decodeURIComponent(parts[1]) : null;
+
+      if (activeId) {
+        if (e.target.checked) {
+          state.notesProgress[activeId] = true;
+        } else {
+          // Explicitly delete so unmarking is clean
+          delete state.notesProgress[activeId];
+        }
         saveProgressToStorage();
-        // Update stats check
         renderNotesMenu();
+        // Also re-render dashboard domain mastery + progress
+        renderDomainMastery();
+        const totalNotes = NOTES_LIST.length;
+        const completedNotes = Object.values(state.notesProgress).filter(Boolean).length;
+        const pct = totalNotes > 0 ? Math.round((completedNotes / totalNotes) * 100) : 0;
+        const pEl = document.getElementById('stats-progress-percent');
+        const cEl = document.getElementById('stats-progress-count');
+        const bEl = document.getElementById('bento-progress-fill');
+        if (pEl) pEl.innerText = `${pct}%`;
+        if (cEl) cEl.innerText = `${completedNotes} of ${totalNotes} units completed`;
+        if (bEl) bEl.style.width = `${pct}%`;
       }
     });
   }
@@ -613,13 +645,15 @@ function renderNotesMenu() {
   if (!menuContainer) return;
   
   menuContainer.innerHTML = NOTES_LIST.map((note, index) => {
-    const isCompleted = state.notesProgress[note.id];
-    const checkIcon = isCompleted ? `<span style="color: var(--success-color); font-size: 11px; margin-left: auto;">✔️ Completed</span>` : '';
+    const isCompleted = !!state.notesProgress[note.id];
+    const completedBadge = isCompleted
+      ? `<span class="unit-completed-badge">Done</span>`
+      : '';
     return `
-      <button class="notes-item-btn" data-id="${note.id}" onclick="window.location.hash='#notes?id=${note.id}'">
+      <button class="notes-item-btn${isCompleted ? ' completed' : ''}" data-id="${note.id}" onclick="window.location.hash='#notes?id=${note.id}'">
         <div style="display: flex; width: 100%; align-items: center;">
           <span class="unit-number">Unit ${index + 1}</span>
-          ${checkIcon}
+          ${completedBadge}
         </div>
         <span class="unit-title">${note.title}</span>
       </button>
