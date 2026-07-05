@@ -13,7 +13,7 @@
     rel="stylesheet">
 
   <link rel="stylesheet" href="assets/css/platform.css">
-  <link rel="shortcut icon" type="image/x-icon" href="assets/images/favicon.ico">
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
 
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -25,10 +25,10 @@
 
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
-        <div class="logo-container">
+        <a href="#dashboard" class="logo-container" aria-label="Go to Dashboard">
           <i data-lucide="cloud-lightning" class="logo-icon"></i>
           <span class="logo-text">AWS CertPrep</span>
-        </div>
+        </a>
         <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" title="Collapse Sidebar">
           <i data-lucide="chevron-left"></i>
         </button>
@@ -309,7 +309,10 @@
                   <div class="empty-notes-state">
                     <i data-lucide="book-open"></i>
                     <h2>Select a Study Unit</h2>
-                    <p>Choose a module from the module list to begin reading the study notes.</p>
+                    <p>
+                      <span class="desktop-only">Choose a module from the left panel to begin reading the study notes.</span>
+                      <span class="mobile-only">Use the Select Modules button to open the study units.</span>
+                    </p>
                   </div>
                 </div>
               </div>
@@ -325,7 +328,7 @@
           <div class="mobile-notes-action-bar">
             <button class="btn btn-secondary" id="mobile-toggle-notes-sidebar">
               <i data-lucide="book-open"></i>
-              <span>Select Module</span>
+              <span>Select Modules</span>
             </button>
             <button class="btn btn-secondary" id="mobile-toggle-notes-toc">
               <i data-lucide="list"></i>

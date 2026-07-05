@@ -284,10 +284,31 @@ body {
   font-family: var(--font-heading);
   font-weight: 700;
   font-size: 16px;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .mobile-logo i {
   color: var(--accent-color);
+}
+
+.desktop-only {
+  display: inline;
+}
+
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .desktop-only {
+    display: none;
+  }
+
+  .mobile-only {
+    display: inline;
+  }
 }
 
 .main-content {
