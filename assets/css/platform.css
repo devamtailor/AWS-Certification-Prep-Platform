@@ -6038,6 +6038,8 @@ body .main-content {
   .mobile-logo,
   .mobile-header > div:last-child { display: none !important; }
 
+  .mobile-logo { display: flex !important; }
+
   .mobile-menu-btn {
     border: none !important;
     background: none !important;
