@@ -184,6 +184,26 @@ function initEventListeners() {
   if (themeBtn) {
     themeBtn.addEventListener('click', toggleTheme);
   }
+
+  // Sidebar collapse toggle (desktop)
+  const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+  const sidebar = document.getElementById('sidebar');
+  const chevronIcon = sidebarToggleBtn ? sidebarToggleBtn.querySelector('i') : null;
+  if (sidebarToggleBtn && sidebar) {
+    // Restore persisted collapse state
+    if (localStorage.getItem('aws_prep_sidebar_collapsed') === 'true') {
+      sidebar.classList.add('collapsed');
+      if (chevronIcon) chevronIcon.setAttribute('data-lucide', 'chevron-right');
+    }
+    sidebarToggleBtn.addEventListener('click', () => {
+      const isCollapsed = sidebar.classList.toggle('collapsed');
+      localStorage.setItem('aws_prep_sidebar_collapsed', isCollapsed);
+      if (chevronIcon) {
+        chevronIcon.setAttribute('data-lucide', isCollapsed ? 'chevron-right' : 'chevron-left');
+        createIconsSafe();
+      }
+    });
+  }
   
   // Reset Progress Modal Trigger
   const resetBtn = document.getElementById('reset-progress-btn');
@@ -224,7 +244,74 @@ function initEventListeners() {
       document.getElementById('sidebar').classList.remove('mobile-open');
     });
   }
-  
+
+  // ---- Slide-up Drawer System (Notes/Exam mobile panels) ----
+  let activeDrawer = null;
+
+  function openDrawer(panelEl) {
+    closeDrawer();
+    if (!panelEl) return;
+    panelEl.classList.add('drawer-open');
+    activeDrawer = panelEl;
+    const backdrop = document.getElementById('drawer-backdrop');
+    if (backdrop) backdrop.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeDrawer() {
+    if (activeDrawer) {
+      activeDrawer.classList.remove('drawer-open');
+      activeDrawer = null;
+    }
+    const backdrop = document.getElementById('drawer-backdrop');
+    if (backdrop) backdrop.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  const drawerBackdrop = document.getElementById('drawer-backdrop');
+  if (drawerBackdrop) {
+    drawerBackdrop.addEventListener('click', closeDrawer);
+  }
+
+  const mobileToggleNotesSidebar = document.getElementById('mobile-toggle-notes-sidebar');
+  if (mobileToggleNotesSidebar) {
+    mobileToggleNotesSidebar.addEventListener('click', () => {
+      const panel = document.querySelector('.notes-sidebar');
+      panel && panel.classList.contains('drawer-open') ? closeDrawer() : openDrawer(panel);
+    });
+  }
+
+  const mobileToggleNotesToc = document.getElementById('mobile-toggle-notes-toc');
+  if (mobileToggleNotesToc) {
+    mobileToggleNotesToc.addEventListener('click', () => {
+      const panel = document.querySelector('.notes-toc-panel');
+      panel && panel.classList.contains('drawer-open') ? closeDrawer() : openDrawer(panel);
+    });
+  }
+
+  const mobileToggleExamNav = document.getElementById('mobile-toggle-exam-nav');
+  if (mobileToggleExamNav) {
+    mobileToggleExamNav.addEventListener('click', () => {
+      const panel = document.querySelector('.exam-sidebar-nav');
+      panel && panel.classList.contains('drawer-open') ? closeDrawer() : openDrawer(panel);
+    });
+  }
+
+  const mobileToggleResultsNav = document.getElementById('mobile-toggle-results-nav');
+  if (mobileToggleResultsNav) {
+    mobileToggleResultsNav.addEventListener('click', () => {
+      const panel = document.querySelector('.results-sidebar-nav');
+      panel && panel.classList.contains('drawer-open') ? closeDrawer() : openDrawer(panel);
+    });
+  }
+
+  // Auto-close drawer when a question nav bubble is tapped on mobile
+  document.addEventListener('click', (e) => {
+    if (activeDrawer && (e.target.closest('.q-nav-bubble') || e.target.closest('.r-nav-bubble'))) {
+      setTimeout(closeDrawer, 180);
+    }
+  });
+
   // Note Search input
   const searchInput = document.getElementById('notes-search-input');
   if (searchInput) {
@@ -314,15 +401,7 @@ function initEventListeners() {
     });
   }
 
-  // Intercept Back to Test Center link click (handles already #exams hash)
-  const backExamsBtn = document.getElementById('results-back-exams-btn');
-  if (backExamsBtn) {
-    backExamsBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      window.location.hash = '#exams';
-      handleRouteChange();
-    });
-  }
+  // Note: results-back-exams-btn is bound inside renderExamResults to avoid stale refs
 
   // Keyboard navigation for active exams & results review via left/right arrows
   document.addEventListener('keydown', (e) => {
@@ -348,20 +427,12 @@ function initEventListeners() {
       
       if (e.key === 'ArrowRight') {
         e.preventDefault();
-        let nextIdx = currentReviewIndex + 1;
-        if (nextIdx < ae.questions.length) {
-          showReviewQuestion(nextIdx);
-          const nextBubble = document.getElementById(`r-nav-bubble-${nextIdx}`);
-          if (nextBubble) nextBubble.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
+        const nextIdx = currentReviewIndex + 1;
+        if (nextIdx < ae.questions.length) showReviewQuestion(nextIdx);
       } else if (e.key === 'ArrowLeft') {
         e.preventDefault();
-        let prevIdx = currentReviewIndex - 1;
-        if (prevIdx >= 0) {
-          showReviewQuestion(prevIdx);
-          const prevBubble = document.getElementById(`r-nav-bubble-${prevIdx}`);
-          if (prevBubble) prevBubble.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
+        const prevIdx = currentReviewIndex - 1;
+        if (prevIdx >= 0) showReviewQuestion(prevIdx);
       }
     }
   });
@@ -699,12 +770,9 @@ function buildTOC() {
 // ==================== PRACTICE EXAMS VIEW CONTROLLER ====================
 function setupExamsView(id) {
   if (id) {
-    // We are inside an active exam session or reviewing it
-    // Routing should remain on #exams?id=X, wait for user configuration
     return;
   }
   
-  // Normal mode: Show the list of exams
   document.getElementById('exams-list-container').style.display = 'block';
   document.getElementById('active-exam-container').style.display = 'none';
   document.getElementById('exam-results-container').style.display = 'none';
@@ -713,32 +781,54 @@ function setupExamsView(id) {
   let gridHTML = '';
   
   for (let i = 1; i <= EXAMS_COUNT; i++) {
-    // Check if passed/failed
     const attempts = state.examAttempts.filter(att => att.examId === i);
     let statusDotClass = '';
     let statusText = 'Not Started';
     let bestScoreText = '';
+    let historyHTML = '';
     
     if (attempts.length > 0) {
       const highestScore = Math.max(...attempts.map(att => att.score));
       const hasPassed = highestScore >= 70;
       statusDotClass = hasPassed ? 'passed' : 'failed';
       statusText = hasPassed ? 'Passed' : 'Failed';
-      bestScoreText = `Best Score: ${highestScore}% (${attempts.length} attempts)`;
+      bestScoreText = `Best: ${highestScore}% &bull; ${attempts.length} attempt${attempts.length > 1 ? 's' : ''}`;
+
+      // Build history rows — last 3 attempts, newest first
+      const recent = attempts.slice().reverse().slice(0, 3);
+      historyHTML = `
+        <div class="exam-history">
+          <span class="exam-history-label">Recent attempts</span>
+          ${recent.map((att, idx) => {
+            const modeLabel = att.mode === 'study' ? 'Study' : 'Exam';
+            const passClass = att.mode === 'study' ? 'study' : (att.passed ? 'pass' : 'fail');
+            const dateStr = new Date(att.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+            return `
+              <div class="exam-history-row">
+                <span class="exam-history-date">${dateStr}</span>
+                <span class="exam-history-mode ${passClass}">${modeLabel}</span>
+                <span class="exam-history-score">${att.score}%</span>
+                <button class="btn-view-result" onclick="viewPastResult(${att.id})" title="View result">
+                  <i data-lucide="eye"></i>
+                </button>
+              </div>`;
+          }).join('')}
+        </div>`;
     }
     
     gridHTML += `
       <div class="exam-panel-card">
         <div class="exam-panel-title-row">
           <h3>Practice Exam ${i}</h3>
-          <span class="exam-status-dot ${statusDotClass}" title="Status: ${statusText}"></span>
+          <span class="exam-status-dot ${statusDotClass}" title="${statusText}"></span>
         </div>
         <div class="exam-panel-details">
-          <span>Syllabus Simulation</span>
-          <span>${bestScoreText || 'No attempts recorded'}</span>
+          <span class="exam-detail-type">Syllabus Simulation</span>
+          <span class="exam-detail-score">${bestScoreText || 'No attempts yet'}</span>
         </div>
+        ${historyHTML}
         <div class="exam-actions-row">
-          <button class="btn btn-secondary" onclick="startExamFlow(${i}, 'study')">Study Mode</button>
+          <button class="btn btn-secondary" onclick="startExamFlow(${i}, 'study')">Study</button>
           <button class="btn btn-primary" onclick="startExamFlow(${i}, 'exam')">Exam Mode</button>
         </div>
       </div>
@@ -746,7 +836,49 @@ function setupExamsView(id) {
   }
   
   examsGrid.innerHTML = gridHTML;
+  createIconsSafe();
 }
+
+// View a past attempt's result without re-running the exam
+window.viewPastResult = function(attemptId) {
+  const attempt = state.examAttempts.find(a => a.id === attemptId);
+  if (!attempt) return;
+
+  // We need the questions to render the review — fetch and parse them
+  document.getElementById('exams-list-container').style.display = 'none';
+  document.getElementById('active-exam-container').style.display = 'none';
+  document.getElementById('exam-results-container').style.display = 'none';
+
+  // Show a loading state in results container
+  const resContainer = document.getElementById('exam-results-container');
+  resContainer.style.display = 'block';
+  const body = document.getElementById('results-active-question-details');
+  if (body) body.innerHTML = '<p class="empty-state">Loading past result…</p>';
+
+  fetch(`practice-exam/practice-exam-${attempt.examId}.md`)
+    .then(res => { if (!res.ok) throw new Error(); return res.text(); })
+    .then(text => {
+      const questions = parseExamMarkdown(text);
+      // Reconstruct a minimal activeExam state so showReviewQuestion works
+      // We only have the final score, not per-question answers — show correct answers only
+      state.activeExam = {
+        id: attempt.examId,
+        mode: attempt.mode,
+        questions: questions,
+        userAnswers: {},   // no per-question data saved — show answer key view
+        flagged: new Set(),
+        timeRemaining: 0,
+        timeSpent: attempt.timeSpent,
+        timerInterval: null,
+        currentIndex: 0,
+        isPaused: false
+      };
+      renderExamResults(attempt);
+    })
+    .catch(() => {
+      if (body) body.innerHTML = '<p class="empty-state" style="color:var(--danger-color)">Could not load exam questions.</p>';
+    });
+};
 
 // Entry Point to Load and Start an Exam
 window.startExamFlow = function(examId, mode) {
@@ -1255,76 +1387,95 @@ function renderExamResults(attempt) {
   document.getElementById('active-exam-container').style.display = 'none';
   const resContainer = document.getElementById('exam-results-container');
   resContainer.style.display = 'block';
-  
+
   const isStudy = attempt.mode === 'study';
-  
-  document.getElementById('results-exam-name').innerText = isStudy 
-    ? `Practice Exam ${attempt.examId} - Study Summary` 
-    : `Practice Exam ${attempt.examId} - Exam Results`;
-    
-  document.getElementById('results-date-string').innerText = `Completed on ${new Date(attempt.date).toLocaleString()}`;
-  
-  // Set Score Gauge
-  const percentEl = document.getElementById('results-score-percent');
-  percentEl.innerText = `${attempt.score}%`;
-  
-  const passFailEl = document.getElementById('results-pass-fail');
-  const circle = document.querySelector('.score-circle');
-  
+  const ae = state.activeExam;
+
+  // Title & date
+  document.getElementById('results-exam-name').innerText = isStudy
+    ? `Practice Exam ${attempt.examId} — Study Summary`
+    : `Practice Exam ${attempt.examId} — Exam Results`;
+  document.getElementById('results-date-string').innerText =
+    `Completed on ${new Date(attempt.date).toLocaleString()}`;
+
+  // Score ring
+  const pct = attempt.score;
+  const pctEl = document.getElementById('results-score-percent');
+  const verdictEl = document.getElementById('results-pass-fail');
+  const ringFill = document.getElementById('score-ring-fill');
+  const ringWrap = document.querySelector('.score-ring-wrap');
+
+  pctEl.innerText = `${pct}%`;
+
   if (isStudy) {
-    passFailEl.innerText = 'REVIEW';
-    circle.classList.remove('fail');
-    circle.style.borderColor = 'var(--accent-color)';
+    verdictEl.innerText = 'REVIEW';
+    verdictEl.className = 'score-ring-verdict study';
+    ringWrap.setAttribute('data-verdict', 'study');
+    if (ringFill) ringFill.style.stroke = 'var(--accent-color)';
   } else {
-    passFailEl.innerText = attempt.passed ? 'PASS' : 'FAIL';
-    circle.style.borderColor = ''; // Reset inline borders
-    if (attempt.passed) {
-      circle.classList.remove('fail');
-    } else {
-      circle.classList.add('fail');
+    verdictEl.innerText = attempt.passed ? 'PASS' : 'FAIL';
+    verdictEl.className = `score-ring-verdict ${attempt.passed ? 'pass' : 'fail'}`;
+    ringWrap.setAttribute('data-verdict', attempt.passed ? 'pass' : 'fail');
+    if (ringFill) {
+      ringFill.style.stroke = attempt.passed ? 'var(--success-color)' : 'var(--danger-color)';
     }
   }
-  
-  // Set statistics count
+
+  // Animate ring fill (314 = 2πr)
+  if (ringFill) {
+    const offset = 314 - (314 * pct) / 100;
+    setTimeout(() => { ringFill.style.strokeDashoffset = offset; }, 80);
+  }
+
+  // Stats
   document.getElementById('results-correct-count').innerText = attempt.correct;
   document.getElementById('results-incorrect-count').innerText = attempt.total - attempt.correct;
   document.getElementById('results-total-count').innerText = attempt.total;
-  
-  // Time taken formatting
   const mins = Math.floor(attempt.timeSpent / 60);
   const secs = attempt.timeSpent % 60;
   document.getElementById('results-time-spent').innerText = `${mins}m ${secs}s`;
-  
-  // Find first incorrect question (or first overall if perfect) to show initially
-  const ae = state.activeExam;
+
+  // Retake button
+  const retakeBtn = document.getElementById('results-retake-btn');
+  if (retakeBtn) {
+    retakeBtn.onclick = () => startExamFlow(attempt.examId, attempt.mode);
+  }
+
+  // Back to exams button
+  const backBtn = document.getElementById('results-back-exams-btn');
+  if (backBtn) {
+    backBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.location.hash = '#exams';
+      handleRouteChange();
+    });
+  }
+
+  // Find first incorrect to show first
   let firstShowIdx = 0;
   for (let i = 0; i < ae.questions.length; i++) {
     const userAns = ae.userAnswers[i] || [];
     const q = ae.questions[i];
-    const isCorrect = userAns.length === q.correctAnswers.length &&
-                      q.correctAnswers.every(ans => userAns.includes(ans));
-    if (!isCorrect) {
-      firstShowIdx = i;
-      break;
-    }
+    const ok = userAns.length === q.correctAnswers.length &&
+               q.correctAnswers.every(a => userAns.includes(a));
+    if (!ok) { firstShowIdx = i; break; }
   }
-  
-  // Populates the left navigation grid
+
+  // Populate nav grid
   populateResultsNavGrid('all');
-  
-  // Select first question
   showReviewQuestion(firstShowIdx);
-  
-  // Hook filter events
+
+  // Filter buttons
   const filters = document.querySelectorAll('.results-review-controls .filter-buttons button');
   filters.forEach(btn => {
     btn.onclick = (e) => {
       filters.forEach(b => b.classList.remove('active'));
       e.target.classList.add('active');
-      const filter = e.target.getAttribute('data-filter');
-      populateResultsNavGrid(filter);
+      populateResultsNavGrid(e.target.getAttribute('data-filter'));
     };
   });
+
+  createIconsSafe();
 }
 
 function populateResultsNavGrid(filter) {
@@ -1364,104 +1515,116 @@ window.showReviewQuestion = function(index) {
   const ae = state.activeExam;
   const q = ae.questions[index];
   const userAns = ae.userAnswers[index] || [];
-  
-  // Highlight bubble
+
+  // Highlight bubble in nav grid
   document.querySelectorAll('.r-nav-bubble').forEach(b => b.classList.remove('active'));
   const bubble = document.getElementById(`r-nav-bubble-${index}`);
-  if (bubble) bubble.classList.add('active');
-  
-  // Grade correctness
+  if (bubble) {
+    bubble.classList.add('active');
+    bubble.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
   const isCorrect = userAns.length === q.correctAnswers.length &&
-                    q.correctAnswers.every(ans => userAns.includes(ans));
-                    
-  const containerClass = isCorrect ? 'correct-highlight' : 'incorrect-highlight';
-  const statusText = isCorrect ? 'Correct' : 'Incorrect';
-  const statusClass = isCorrect ? 'correct' : 'incorrect';
-  
-  // Build options elements
+                    q.correctAnswers.every(a => userAns.includes(a));
+
+  // Build options HTML
   const optsHTML = Object.entries(q.options).map(([letter, text]) => {
     const isChosen = userAns.includes(letter);
     const isAnswer = q.correctAnswers.includes(letter);
-    
-    let badgeClass = '';
+    let cls = '';
+    let icon = '';
     if (isAnswer) {
-      badgeClass = 'graded-correct';
+      cls = 'graded-correct';
+      icon = `<span class="option-grade-icon correct-icon"><i data-lucide="check"></i></span>`;
     } else if (isChosen) {
-      badgeClass = 'graded-incorrect';
+      cls = 'graded-incorrect';
+      icon = `<span class="option-grade-icon incorrect-icon"><i data-lucide="x"></i></span>`;
     }
-    
     return `
-      <div class="option-choice-wrapper ${badgeClass}" style="cursor: default; margin-bottom: 8px;">
+      <div class="option-choice-wrapper ${cls}" style="cursor:default;">
         <div class="option-input-btn"></div>
         <span class="option-text"><strong>${letter}.</strong> ${text}</span>
-      </div>
-    `;
+        ${icon}
+      </div>`;
   }).join('');
-  
+
+  // User's chosen answers text
+  const chosenText = userAns.length > 0 ? userAns.join(', ') : '<em>No answer selected</em>';
+
   const detailPanel = document.getElementById('results-active-question-details');
   if (!detailPanel) return;
-  detailPanel.className = `graded-question-card ${containerClass}`;
-  
+
+  detailPanel.className = `results-question-frame ${isCorrect ? 'correct-highlight' : 'incorrect-highlight'}`;
   detailPanel.innerHTML = `
-    <div class="graded-question-num-row">
-      <span class="question-number">Question ${q.num}</span>
-      <span class="graded-status-text ${statusClass}">${statusText}</span>
+    <div class="rq-header">
+      <div class="rq-header-left">
+        <span class="rq-num">Question ${q.num} <span class="rq-of">of ${ae.questions.length}</span></span>
+        ${ae.flagged.has(index) ? `<span class="rq-flagged-badge"><i data-lucide="flag"></i> Flagged</span>` : ''}
+      </div>
+      <span class="rq-verdict ${isCorrect ? 'correct' : 'incorrect'}">
+        <i data-lucide="${isCorrect ? 'check-circle' : 'x-circle'}"></i>
+        ${isCorrect ? 'Correct' : 'Incorrect'}
+      </span>
     </div>
-    <div class="question-body" style="font-size: 16px; margin-bottom: 16px;">
-      ${q.questionText}
-    </div>
-    <div class="options-container" style="margin-bottom: 16px;">
-      ${optsHTML}
-    </div>
-    <div class="practice-explanation-card" style="margin-top: 16px; margin-bottom: 8px;">
-      <p><strong>Correct Answer:</strong> ${q.correctAnswers.join(', ')}</p>
-      ${q.explanation ? `<p>${q.explanation}</p>` : ''}
+
+    <div class="rq-question-text">${q.questionText}</div>
+
+    <div class="options-container rq-options">${optsHTML}</div>
+
+    <div class="rq-answer-block">
+      <div class="rq-answer-row">
+        <span class="rq-answer-label">Your answer</span>
+        <span class="rq-answer-value ${isCorrect ? 'correct' : 'incorrect'}">${chosenText}</span>
+      </div>
+      <div class="rq-answer-row">
+        <span class="rq-answer-label">Correct answer</span>
+        <span class="rq-answer-value correct">${q.correctAnswers.join(', ')}</span>
+      </div>
+      ${q.explanation ? `<div class="rq-explanation"><i data-lucide="info"></i><span>${q.explanation}</span></div>` : ''}
     </div>
   `;
 
-  // Bind and enable/disable navigation buttons outside the card
-  const navContainer = document.getElementById('results-review-nav-buttons');
-  if (navContainer) {
-    navContainer.style.display = 'flex';
-    
-    const prevBtn = document.getElementById('results-prev-btn');
-    const nextBtn = document.getElementById('results-next-btn');
-    
-    if (index === 0) {
-      prevBtn.setAttribute('disabled', 'true');
-      prevBtn.style.opacity = '0.5';
-      prevBtn.style.cursor = 'not-allowed';
-      prevBtn.onclick = null;
-    } else {
-      prevBtn.removeAttribute('disabled');
-      prevBtn.style.opacity = '';
-      prevBtn.style.cursor = '';
-      prevBtn.onclick = () => {
-        showReviewQuestion(index - 1);
-        const prevBubble = document.getElementById(`r-nav-bubble-${index - 1}`);
-        if (prevBubble) prevBubble.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      };
-    }
-    
-    if (index === ae.questions.length - 1) {
-      nextBtn.setAttribute('disabled', 'true');
-      nextBtn.style.opacity = '0.5';
-      nextBtn.style.cursor = 'not-allowed';
-      nextBtn.onclick = null;
-    } else {
-      nextBtn.removeAttribute('disabled');
-      nextBtn.style.opacity = '';
-      nextBtn.style.cursor = '';
-      nextBtn.onclick = () => {
-        showReviewQuestion(index + 1);
-        const nextBubble = document.getElementById(`r-nav-bubble-${index + 1}`);
-        if (nextBubble) nextBubble.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      };
-    }
+  // Nav bar (desktop)
+  const navBar = document.getElementById('results-review-nav-buttons');
+  const counter = document.getElementById('results-nav-counter');
+  if (navBar) {
+    navBar.style.display = 'flex';
+    if (counter) counter.innerText = `${index + 1} / ${ae.questions.length}`;
+
+    const prevBtn  = document.getElementById('results-prev-btn');
+    const nextBtn  = document.getElementById('results-next-btn');
+    const prevMob  = document.getElementById('results-prev-btn-mobile');
+    const nextMob  = document.getElementById('results-next-btn-mobile');
+
+    const goTo = (i) => {
+      showReviewQuestion(i);
+    };
+
+    // Previous
+    [prevBtn, prevMob].forEach(btn => {
+      if (!btn) return;
+      if (index === 0) {
+        btn.setAttribute('disabled', 'true');
+      } else {
+        btn.removeAttribute('disabled');
+        btn.onclick = () => goTo(index - 1);
+      }
+    });
+
+    // Next
+    [nextBtn, nextMob].forEach(btn => {
+      if (!btn) return;
+      if (index === ae.questions.length - 1) {
+        btn.setAttribute('disabled', 'true');
+      } else {
+        btn.removeAttribute('disabled');
+        btn.onclick = () => goTo(index + 1);
+      }
+    });
   }
 
   createIconsSafe();
-}
+};
 
 function exitExamSession() {
   if (confirm('Are you sure you want to exit the exam? Your current progress will be lost.')) {
@@ -1636,6 +1799,15 @@ const MINDMAP_TREE = [
 function setupMindmapView() {
   const container = document.getElementById('mindmap-container');
   if (!container) return;
+
+  // Update header stat pills
+  const totalUnits = NOTES_LIST.length;
+  const doneUnits = Object.values(state.notesProgress).filter(Boolean).length;
+  const pct = totalUnits > 0 ? Math.round((doneUnits / totalUnits) * 100) : 0;
+  const countPill = document.getElementById('mindmap-completed-count');
+  const pctPill = document.getElementById('mindmap-progress-pill');
+  if (countPill) countPill.innerHTML = `<strong>${doneUnits}</strong> Units Done`;
+  if (pctPill) pctPill.textContent = `${pct}% Complete`;
 
   // Always rebuild to reflect latest progress
   const tree = document.createElement('div');

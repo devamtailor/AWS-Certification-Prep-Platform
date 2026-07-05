@@ -30,6 +30,9 @@
           <i data-lucide="cloud-lightning" class="logo-icon"></i>
           <span class="logo-text">Cloud Control</span>
         </div>
+        <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" title="Collapse Sidebar">
+          <i data-lucide="chevron-left"></i>
+        </button>
         <button class="mobile-close-btn" id="mobile-close-btn">
           <i data-lucide="x"></i>
         </button>
@@ -38,46 +41,46 @@
       <nav class="sidebar-nav">
         <ul>
           <li>
-            <a href="#dashboard" class="nav-link active" data-view="dashboard">
+            <a href="#dashboard" class="nav-link active" data-view="dashboard" data-tooltip="Dashboard">
               <i data-lucide="layout-dashboard"></i>
-              <span>Dashboard</span>
+              <span class="link-text">Dashboard</span>
             </a>
           </li>
           <li>
-            <a href="#notes" class="nav-link" data-view="notes">
+            <a href="#notes" class="nav-link" data-view="notes" data-tooltip="Study Notes">
               <i data-lucide="book-open"></i>
-              <span>Study Notes</span>
+              <span class="link-text">Study Notes</span>
             </a>
           </li>
           <li>
-            <a href="#exams" class="nav-link" data-view="exams">
+            <a href="#exams" class="nav-link" data-view="exams" data-tooltip="Practice Exams">
               <i data-lucide="file-question"></i>
-              <span>Practice Exams</span>
+              <span class="link-text">Practice Exams</span>
             </a>
           </li>
           <li>
-            <a href="#syllabus" class="nav-link" data-view="syllabus">
+            <a href="#syllabus" class="nav-link" data-view="syllabus" data-tooltip="Syllabus Guide">
               <i data-lucide="award"></i>
-              <span>Syllabus Guide</span>
+              <span class="link-text">Syllabus Guide</span>
             </a>
           </li>
           <li>
-            <a href="#mindmap" class="nav-link" data-view="mindmap">
+            <a href="#mindmap" class="nav-link" data-view="mindmap" data-tooltip="Mind Map">
               <i data-lucide="network"></i>
-              <span>Mind Map</span>
+              <span class="link-text">Mind Map</span>
             </a>
           </li>
           <li>
-            <button class="nav-link theme-toggle-btn" id="theme-toggle-btn">
+            <button class="nav-link theme-toggle-btn" id="theme-toggle-btn" data-tooltip="Toggle Theme">
               <i data-lucide="sun" class="sun-icon"></i>
               <i data-lucide="moon" class="moon-icon"></i>
-              <span class="theme-text">Light Mode</span>
+              <span class="link-text theme-text">Light Mode</span>
             </button>
           </li>
           <li>
-            <button class="nav-link reset-progress-btn" id="reset-progress-btn" style="border: none; text-align: left; width: 100%; font-family: inherit;">
+            <button class="nav-link reset-progress-btn" id="reset-progress-btn" data-tooltip="Reset Progress" style="border: none; text-align: left; width: 100%; font-family: inherit;">
               <i data-lucide="rotate-ccw"></i>
-              <span>Reset Progress</span>
+              <span class="link-text">Reset Progress</span>
             </button>
           </li>
         </ul>
@@ -87,8 +90,8 @@
     <!-- Main Content Area -->
     <div class="main-wrapper">
       
-      <!-- Top Mobile Header -->
-      <header class="mobile-header">
+      <!-- Top Mobile Header — shown only on mobile where sidebar is a drawer -->
+      <header class="mobile-header" id="mobile-header">
         <button class="mobile-menu-btn" id="mobile-menu-btn">
           <i data-lucide="menu"></i>
         </button>
@@ -106,93 +109,180 @@
         <section id="dashboard-view" class="view-section active">
           <!-- Hero Section: Editorial Typography & Massive Headline -->
           <div class="mission-hero-banner">
-            <h1 class="editorial-headline">Dashboard</h1>
-            <p class="mission-description">Track your study progress, explore cloud core modules, and take simulated practice tests to assess your exam readiness.</p>
+            <div class="hero-copy-block">
+              <span class="system-status-indicator"><span class="pulse-dot"></span>CLF-C02 PREPARATION SYSTEM</span>
+              <h1 class="editorial-headline">AWS Cloud Practitioner Command Center</h1>
+              <p class="mission-description">A focused workspace for reading, recall, and timed practice. Track what is complete, what is weak, and what deserves your next hour.</p>
+            </div>
+            <div class="hero-cert-card" aria-label="Certification track">
+              <div class="cert-card-header">
+                <i data-lucide="cloud" class="cert-card-icon"></i>
+                <div class="cert-card-title-group">
+                  <span class="hero-cert-kicker">CURRENT TRACK</span>
+                  <strong class="cert-card-title">Cloud Practitioner</strong>
+                </div>
+              </div>
+              <p class="cert-card-desc">Foundational cloud fluency, billing, security, services, and architecture patterns.</p>
+              <div class="hero-cert-grid">
+                <div class="cert-stat-item">
+                  <span class="cert-stat-val">CLF-C02</span>
+                  <span class="cert-stat-lbl">Exam Code</span>
+                </div>
+                <div class="cert-stat-item">
+                  <span class="cert-stat-val">23</span>
+                  <span class="cert-stat-lbl">Exams</span>
+                </div>
+                <div class="cert-stat-item">
+                  <span class="cert-stat-val">19</span>
+                  <span class="cert-stat-lbl">Units</span>
+                </div>
+                <div class="cert-stat-item">
+                  <span class="cert-stat-val">70%</span>
+                  <span class="cert-stat-lbl">Pass Score</span>
+                </div>
+              </div>
+            </div>
           </div>
           
-          <!-- Bento Grid Layout -->
-          <div class="mission-bento-grid">
+          <!-- Redesigned Structured Dashboard Layout -->
+          <div class="dashboard-content-layout">
             
-            <!-- Bento Card 1: ACTIVE MISSION STATE (Primary stat) -->
-            <div class="bento-card span-3 highlight-card">
-              <div class="bento-card-header">
-                <span class="bento-label">ACTIVE TRACK CONFIGURATION</span>
-                <i data-lucide="shield-check" class="bento-header-icon text-orange"></i>
+            <!-- Top Metric Stats Row -->
+            <div class="dashboard-stats-row">
+              <div class="dashboard-stat-card">
+                <div class="stat-card-header">
+                  <span class="stat-card-label">STUDY PROGRESS</span>
+                  <i data-lucide="shield-check" class="stat-card-icon text-orange"></i>
+                </div>
+                <div class="stat-card-body">
+                  <span class="stat-card-value" id="stats-progress-percent">0%</span>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="bento-progress-fill" style="width: 0%;"></div>
+                  </div>
+                  <span class="progress-sub-text" id="stats-progress-count">0 of 19 units completed</span>
+                </div>
               </div>
-              <div class="mission-configuration-content">
-                <div class="current-track-badge">AWS CERTIFIED CLOUD PRACTITIONER</div>
-                
-                <div class="mission-telemetry-row">
-                  <div class="telemetry-readout">
-                    <span class="readout-value" id="stats-progress-percent">0%</span>
-                    <span class="readout-label">STUDY PROGRESS</span>
+              
+              <div class="dashboard-stat-card">
+                <div class="stat-card-header">
+                  <span class="stat-card-label">EXAMS TAKEN</span>
+                  <i data-lucide="file-question" class="stat-card-icon text-cyan"></i>
+                </div>
+                <div class="stat-card-body">
+                  <span class="stat-card-value" id="stats-exams-completed">0</span>
+                  <span class="stat-card-subtext">Completed practice tests</span>
+                </div>
+              </div>
+              
+              <div class="dashboard-stat-card">
+                <div class="stat-card-header">
+                  <span class="stat-card-label">AVERAGE SCORE</span>
+                  <i data-lucide="award" class="stat-card-icon text-green"></i>
+                </div>
+                <div class="stat-card-body">
+                  <span class="stat-card-value" id="stats-average-score">0%</span>
+                  <span class="stat-card-subtext">Passing threshold is 70%</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Main Content Two-Column Grid -->
+            <div class="dashboard-columns-grid">
+              
+              <!-- Left Column (Recommended Next Unit & Weakest Domain) -->
+              <div class="dashboard-col">
+                <!-- Recommended Next Unit -->
+                <div class="dashboard-panel-card">
+                  <div class="panel-card-header">
+                    <span class="panel-label">RECOMMENDED NEXT UNIT</span>
+                    <i data-lucide="terminal" class="panel-header-icon text-green"></i>
                   </div>
-                  <div class="telemetry-readout">
-                    <span class="readout-value" id="stats-exams-completed">0</span>
-                    <span class="readout-label">EXAMS TAKEN</span>
-                  </div>
-                  <div class="telemetry-readout">
-                    <span class="readout-value" id="stats-average-score">0%</span>
-                    <span class="readout-label">AVERAGE SCORE</span>
+                  <div class="continue-card-bento" id="continue-card">
+                    <span class="badge bento-action-badge">Next Target Unit</span>
+                    <h3 id="continue-title" class="bento-action-title">Loading...</h3>
+                    <p id="continue-description" class="bento-action-desc">Ready to begin study</p>
+                    <div class="continue-action-row">
+                      <a href="#notes" class="btn btn-primary btn-deploy" id="continue-btn">Resume Reading</a>
+                    </div>
                   </div>
                 </div>
                 
-                <div class="progress-bar-container">
-                  <div class="progress-bar-fill" id="bento-progress-fill" style="width: 0%;"></div>
-                </div>
-                <div class="progress-sub-text" id="stats-progress-count">0 of 19 units completed</div>
-              </div>
-            </div>
-            
-            <!-- Bento Card 3: CORE COMPUTE DEPLOYMENT (Resume Action) -->
-            <div class="bento-card span-2">
-              <div class="bento-card-header">
-                <span class="bento-label">RECOMMENDED NEXT UNIT</span>
-                <i data-lucide="terminal" class="bento-header-icon text-green"></i>
-              </div>
-              <div class="continue-card-bento" id="continue-card">
-                <span class="badge bento-action-badge">Next Target Unit</span>
-                <h3 id="continue-title" class="bento-action-title">Loading...</h3>
-                <p id="continue-description" class="bento-action-desc">Ready to begin study</p>
-                <div class="continue-action-row">
-                  <a href="#notes" class="btn btn-primary btn-deploy" id="continue-btn">Resume Reading</a>
+                <!-- Weakest Domain -->
+                <div class="dashboard-panel-card">
+                  <div class="panel-card-header">
+                    <span class="panel-label">WEAKEST DOMAIN</span>
+                    <i data-lucide="radar" class="panel-header-icon text-cyan"></i>
+                  </div>
+                  <div class="weak-topic-content">
+                    <h3 id="weak-topic-title">Cloud Concepts</h3>
+                    <p id="weak-topic-detail">Start by completing the first study units.</p>
+                    <a href="#notes" class="quiet-link" id="weak-topic-link">Open related notes</a>
+                  </div>
                 </div>
               </div>
+              
+              <!-- Right Column (Exam Readiness & Domain Mastery) -->
+              <div class="dashboard-col">
+                <!-- Exam Readiness -->
+                <div class="dashboard-panel-card">
+                  <div class="panel-card-header">
+                    <span class="panel-label">EXAM READINESS</span>
+                    <i data-lucide="gauge" class="panel-header-icon text-orange"></i>
+                  </div>
+                  <div class="readiness-block">
+                    <div class="readiness-badge" id="stats-readiness">Not Ready</div>
+                    <span class="bento-sub-text" id="stats-readiness-sub">Complete units and pass practice exams.</span>
+                  </div>
+                  <div class="streak-telemetry">
+                    <div class="telemetry-item-inline">
+                      <i data-lucide="calendar-check"></i>
+                      <span id="study-streak-text">0 active study days</span>
+                    </div>
+                    <div class="telemetry-item-inline">
+                      <i data-lucide="target"></i>
+                      <span id="readiness-focus-text">Build baseline coverage first</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Domain Mastery -->
+                <div class="dashboard-panel-card">
+                  <div class="panel-card-header">
+                    <span class="panel-label">DOMAIN MASTERY</span>
+                    <i data-lucide="activity" class="panel-header-icon text-purple"></i>
+                  </div>
+                  <div class="domain-mastery-list" id="domain-mastery-list">
+                    <!-- JS populated -->
+                  </div>
+                </div>
+              </div>
+              
             </div>
             
-            <!-- Bento Card 4: DOMAIN MASTERY OBSERVABILITY -->
-            <div class="bento-card span-1">
-              <div class="bento-card-header">
-                <span class="bento-label">DOMAIN MASTERY</span>
-                <i data-lucide="activity" class="bento-header-icon text-purple"></i>
-              </div>
-              <div class="domain-mastery-list" id="domain-mastery-list">
-                <!-- JS populated -->
-              </div>
-            </div>
-            
-            <!-- Bento Card 5: TELEMETRY ARCHIVE (Recent Attempts) -->
-            <div class="bento-card span-3">
-              <div class="bento-card-header">
-                <span class="bento-label">RECENT EXAM ATTEMPTS</span>
-                <i data-lucide="cpu" class="bento-header-icon text-muted"></i>
-              </div>
-              <div class="recent-exams-table-container">
-                <table class="recent-exams-table">
-                  <thead>
-                    <tr>
-                      <th>EXAM NAME</th>
-                      <th>DATE TAKEN</th>
-                      <th>SCORE</th>
-                      <th>STATUS</th>
-                    </tr>
-                  </thead>
-                  <tbody id="recent-attempts-list">
-                    <tr>
-                      <td colspan="4" class="empty-state">No exam attempts recorded yet. Start an exam to track performance.</td>
-                    </tr>
-                  </tbody>
-                </table>
+            <!-- Bottom Full-Width Table Row -->
+            <div class="dashboard-table-row">
+              <div class="dashboard-panel-card">
+                <div class="panel-card-header">
+                  <span class="panel-label">RECENT EXAM ATTEMPTS</span>
+                  <i data-lucide="cpu" class="panel-header-icon text-muted"></i>
+                </div>
+                <div class="recent-exams-table-container">
+                  <table class="recent-exams-table">
+                    <thead>
+                      <tr>
+                        <th>EXAM NAME</th>
+                        <th>DATE TAKEN</th>
+                        <th>SCORE</th>
+                        <th>STATUS</th>
+                      </tr>
+                    </thead>
+                    <tbody id="recent-attempts-list">
+                      <tr>
+                        <td colspan="4" class="empty-state">No exam attempts recorded yet. Start an exam to track performance.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
             
@@ -249,6 +339,17 @@
               </div>
             </div>
           </div>
+          <!-- Mobile Notes Action Bar -->
+          <div class="mobile-notes-action-bar">
+            <button class="btn btn-secondary" id="mobile-toggle-notes-sidebar">
+              <i data-lucide="book-open"></i>
+              <span>Select Module</span>
+            </button>
+            <button class="btn btn-secondary" id="mobile-toggle-notes-toc">
+              <i data-lucide="list"></i>
+              <span>Page TOC</span>
+            </button>
+          </div>
         </section>
         
         <!-- ==================== PRACTICE EXAMS VIEW ==================== -->
@@ -256,8 +357,14 @@
           <!-- Main Exams Listing -->
           <div id="exams-list-container">
             <div class="exams-welcome-header">
+              <span class="page-header-eyebrow">CLF-C02 &bull; Practice Test Center</span>
               <h1>Practice Exam Center</h1>
-              <p>Test your knowledge with 23 realistic practice tests. Each test replicates the actual exam style containing 50-65 questions.</p>
+              <p>23 realistic practice tests that replicate the actual exam style. Use Study Mode for instant feedback, or Exam Mode for a timed simulation.</p>
+              <div class="page-header-badge-row">
+                <span class="page-stat-pill"><strong>23</strong> Exams</span>
+                <span class="page-stat-pill"><strong>50–65</strong> Questions each</span>
+                <span class="page-stat-pill">Pass at <strong>70%</strong></span>
+              </div>
             </div>
             <div class="exams-grid" id="exams-grid">
               <!-- Dynamically Populated -->
@@ -285,13 +392,12 @@
               </div>
             </div>
             
+            <!-- Question grid + content side by side -->
             <div class="exam-layout">
-              <!-- Left Grid Navigator -->
+              <!-- Left: question number grid (no scroll — wraps naturally) -->
               <div class="exam-sidebar-nav">
                 <h3>Questions</h3>
-                <div class="question-nav-grid" id="question-nav-grid">
-                  <!-- JS populated -->
-                </div>
+                <div class="question-nav-grid" id="question-nav-grid"></div>
                 <div class="nav-legend">
                   <div class="legend-item"><span class="legend-dot current"></span>Active</div>
                   <div class="legend-item"><span class="legend-dot answered"></span>Answered</div>
@@ -300,7 +406,7 @@
                 </div>
               </div>
               
-              <!-- Center Question Box -->
+              <!-- Right: question card only (scrolls independently) -->
               <div class="exam-main-panel">
                 <div class="question-card" id="question-card">
                   <div class="question-header">
@@ -310,124 +416,155 @@
                       <span>Flag for Review</span>
                     </button>
                   </div>
-                  
-                  <div class="question-body" id="current-question-text">
-                    <!-- Dynamic Question text -->
-                  </div>
-                  
-                  <div class="options-container" id="current-options-list">
-                    <!-- Dynamic choices list -->
-                  </div>
-                  
-                  <!-- Practice mode explanation block -->
+                  <div class="question-body" id="current-question-text"></div>
+                  <div class="options-container" id="current-options-list"></div>
                   <div class="practice-explanation-card" id="practice-explanation" style="display: none;">
-                    <div class="explanation-status" id="explanation-status">
-                      <!-- Correct/Incorrect badge -->
-                    </div>
-                    <div class="explanation-text" id="explanation-text-content">
-                      <!-- Explanation content -->
-                    </div>
+                    <div class="explanation-status" id="explanation-status"></div>
+                    <div class="explanation-text" id="explanation-text-content"></div>
                   </div>
-                </div>
-                
-                <div class="exam-action-buttons">
-                  <button class="btn btn-secondary" id="quiz-prev-btn">
-                    <i data-lucide="chevron-left"></i>
-                    <span>Previous</span>
-                  </button>
-                  <button class="btn btn-secondary" id="quiz-check-btn" style="display: none;">Check Answer</button>
-                  <button class="btn btn-primary" id="quiz-next-btn">
-                    <span>Next</span>
-                    <i data-lucide="chevron-right"></i>
-                  </button>
                 </div>
               </div>
             </div>
-            
-          </div>
+
+            <!-- Prev / Next / Check — fixed bar OUTSIDE the exam layout so it never moves -->
+            <div class="exam-nav-bar">
+              <button class="btn btn-secondary" id="quiz-prev-btn">
+                <i data-lucide="chevron-left"></i>
+                <span>Prev</span>
+              </button>
+              <button class="btn btn-secondary" id="quiz-check-btn" style="display: none;">Check Answer</button>
+              <button class="btn btn-primary" id="quiz-next-btn">
+                <span>Next</span>
+                <i data-lucide="chevron-right"></i>
+              </button>
+            </div>
+
+            <!-- Mobile sticky bar -->
+            <div class="mobile-exam-action-bar">
+              <button class="btn btn-secondary" id="mobile-toggle-exam-nav">
+                <i data-lucide="grid"></i>
+                <span>Questions</span>
+              </button>
+            </div>
+          </div> <!-- end active-exam-container -->
           
           <!-- Exam Results Screen -->
           <div id="exam-results-container" style="display: none;">
-            <div class="results-card">
-              <div class="results-header">
-                <div class="score-circle-container">
-                  <div class="score-circle">
-                    <span id="results-score-percent">0%</span>
-                    <span class="score-label" id="results-pass-fail">PASS</span>
+
+            <!-- Results Hero Header -->
+            <div class="results-hero">
+              <div class="results-hero-left">
+                <div class="score-ring-wrap">
+                  <svg class="score-ring" viewBox="0 0 120 120">
+                    <circle class="score-ring-track" cx="60" cy="60" r="50"/>
+                    <circle class="score-ring-fill" id="score-ring-fill" cx="60" cy="60" r="50" stroke-dasharray="314" stroke-dashoffset="314"/>
+                  </svg>
+                  <div class="score-ring-label">
+                    <span class="score-ring-pct" id="results-score-percent">0%</span>
+                    <span class="score-ring-verdict" id="results-pass-fail">PASS</span>
                   </div>
                 </div>
-                <div class="results-header-info">
-                  <h1 id="results-exam-name">Exam Results</h1>
-                  <p id="results-date-string">Completed on July 5, 2026</p>
+                <div class="results-meta">
+                  <h1 class="results-title" id="results-exam-name">Exam Results</h1>
+                  <p class="results-date" id="results-date-string">Completed on —</p>
                   <div class="results-stats-row">
-                    <div class="r-stat">
+                    <div class="r-stat correct-stat">
                       <span class="r-val" id="results-correct-count">0</span>
                       <span class="r-lbl">Correct</span>
                     </div>
-                    <div class="r-stat">
+                    <div class="r-stat incorrect-stat">
                       <span class="r-val" id="results-incorrect-count">0</span>
                       <span class="r-lbl">Incorrect</span>
                     </div>
                     <div class="r-stat">
                       <span class="r-val" id="results-total-count">0</span>
-                      <span class="r-lbl">Total Questions</span>
+                      <span class="r-lbl">Total</span>
                     </div>
                     <div class="r-stat">
                       <span class="r-val" id="results-time-spent">0m</span>
-                      <span class="r-lbl">Time Taken</span>
+                      <span class="r-lbl">Time</span>
                     </div>
                   </div>
                 </div>
               </div>
-              
-              <div class="results-split-layout">
-                <!-- Left Navigation Grid -->
-                <div class="results-sidebar-nav">
-                  <div class="results-review-controls">
-                    <h3>Review Navigation</h3>
-                    <div class="filter-buttons">
-                      <button class="btn btn-outline active" data-filter="all">All</button>
-                      <button class="btn btn-outline" data-filter="incorrect">Incorrect</button>
-                      <button class="btn btn-outline" data-filter="flagged">Flagged</button>
-                    </div>
-                  </div>
-                  <div class="results-nav-grid" id="results-nav-grid">
-                    <!-- JS populated grid -->
-                  </div>
-                </div>
-                
-                <!-- Right Details View Panel -->
-                 <div class="results-main-panel">
-                   <div class="graded-question-card-scroll-wrapper" style="flex: 1; min-height: 0; overflow-y: auto; padding-right: 8px;">
-                     <div class="graded-question-card" id="results-active-question-details">
-                       <p class="empty-state">Select a question bubble on the left to review its explanation.</p>
-                     </div>
-                   </div>
-                   
-                   <!-- Pinned bottom navigation for results review -->
-                   <div class="results-review-action-buttons" id="results-review-nav-buttons" style="display: none; justify-content: space-between; border-top: 1px solid var(--border-color); padding-top: 16px; margin-top: 16px; flex-shrink: 0;">
-                     <button class="btn btn-outline btn-sm" id="results-prev-btn">
-                       <i data-lucide="arrow-left" style="width: 14px; height: 14px; margin-right: 4px; vertical-align: middle;"></i> Prev Question
-                     </button>
-                     <button class="btn btn-outline btn-sm" id="results-next-btn">
-                       Next Question <i data-lucide="arrow-right" style="width: 14px; height: 14px; margin-left: 4px; vertical-align: middle;"></i>
-                     </button>
-                   </div>
-                 </div>
-              </div>
-              
-              <div class="results-footer-actions">
-                <a href="#exams" class="btn btn-primary" id="results-back-exams-btn">Back to Test Center</a>
+              <div class="results-hero-actions">
+                <a href="#exams" class="btn btn-secondary" id="results-back-exams-btn">
+                  <i data-lucide="layout-grid"></i>
+                  All Exams
+                </a>
+                <button class="btn btn-primary" id="results-retake-btn">
+                  <i data-lucide="rotate-ccw"></i>
+                  Retake Exam
+                </button>
               </div>
             </div>
+
+            <!-- Review Body -->
+            <div class="results-body">
+
+              <!-- Left: Question Navigator (no scroll — wraps naturally) -->
+              <div class="results-sidebar-nav" id="results-sidebar-nav">
+                <div class="results-review-controls">
+                  <span class="results-nav-label">Review Navigation</span>
+                  <div class="filter-buttons">
+                    <button class="btn btn-outline active" data-filter="all">All</button>
+                    <button class="btn btn-outline" data-filter="incorrect">Wrong</button>
+                    <button class="btn btn-outline" data-filter="flagged">Flagged</button>
+                  </div>
+                </div>
+                <div class="results-nav-grid" id="results-nav-grid"></div>
+              </div>
+
+              <!-- Right: Question detail (scrolls independently) -->
+              <div class="results-main-panel">
+                <div class="results-question-frame" id="results-active-question-details">
+                  <p class="empty-state">Select a question to review.</p>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Prev / Next — fixed bar OUTSIDE the scrolling area so it never moves -->
+            <div class="results-nav-bar" id="results-review-nav-buttons" style="display:none;">
+              <button class="btn btn-secondary" id="results-prev-btn">
+                <i data-lucide="arrow-left"></i>
+                <span>Prev</span>
+              </button>
+              <span class="results-nav-counter" id="results-nav-counter">1 / 50</span>
+              <button class="btn btn-secondary" id="results-next-btn">
+                <span>Next</span>
+                <i data-lucide="arrow-right"></i>
+              </button>
+            </div>
+
+            <!-- Mobile sticky bar — single toggle for question drawer -->
+            <div class="mobile-exam-action-bar">
+              <button class="btn btn-secondary" id="mobile-toggle-results-nav">
+                <i data-lucide="grid"></i>
+                <span>Questions</span>
+              </button>
+              <button class="btn btn-secondary" id="results-prev-btn-mobile" disabled>
+                <i data-lucide="arrow-left"></i>
+              </button>
+              <button class="btn btn-secondary" id="results-next-btn-mobile">
+                <i data-lucide="arrow-right"></i>
+              </button>
+            </div>
+
           </div>
-        </section>
+        </section> <!-- end exams-view -->
         
         <!-- ==================== SYLLABUS VIEW ==================== -->
         <section id="syllabus-view" class="view-section">
           <div class="syllabus-header">
-            <h1>Syllabus Guide & Domain Breakdown</h1>
-            <p>Review the official exam weightings and key domains defined in the syllabus. Click on each domain to expand sub-topics.</p>
+            <span class="page-header-eyebrow">CLF-C02 &bull; Official Exam Guide</span>
+            <h1>Syllabus Guide &amp; Domain Breakdown</h1>
+            <p>Review the official exam weightings and key domains. Click any domain to expand its sub-topics and objectives.</p>
+            <div class="page-header-badge-row">
+              <span class="page-stat-pill"><strong>4</strong> Domains</span>
+              <span class="page-stat-pill"><strong>~90 min</strong> Exam Duration</span>
+              <span class="page-stat-pill">Pass Score <strong>700 / 1000</strong></span>
+            </div>
           </div>
           <div class="syllabus-content-wrapper">
             <div class="syllabus-container" id="syllabus-container">
@@ -439,8 +576,13 @@
         <!-- ==================== MIND MAP VIEW ==================== -->
         <section id="mindmap-view" class="view-section">
           <div class="mindmap-header">
+            <span class="page-header-eyebrow">19 Units &bull; 4 Domains</span>
             <h1>Topic Mind Map</h1>
-            <p>Visual overview of all AWS Cloud Practitioner topics. Click any node to open the corresponding study notes.</p>
+            <p>All AWS Cloud Practitioner topics organized by domain. Click any unit to jump straight to its study notes.</p>
+            <div class="page-header-badge-row">
+              <span class="page-stat-pill" id="mindmap-completed-count"><strong>0</strong> Units Done</span>
+              <span class="page-stat-pill" id="mindmap-progress-pill">0% Complete</span>
+            </div>
           </div>
           <div class="mindmap-container" id="mindmap-container">
             <!-- JS-rendered interactive topic tree -->
@@ -474,6 +616,9 @@
       </div>
     </div>
   </div>
+
+  <!-- Backdrop for slide-up mobile drawers -->
+  <div class="drawer-backdrop" id="drawer-backdrop"></div>
 
   <!-- Client-side Logic Script -->
   <script src="assets/js/platform.js"></script>
