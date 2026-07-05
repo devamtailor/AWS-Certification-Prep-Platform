@@ -1,24 +1,28 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AWS Cloud Practitioner Prep Hub</title>
-  
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
   <link rel="stylesheet" href="assets/css/platform.css">
   <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
-  
+
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
+
 <body>
 
   <div class="app-container">
-    
+
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
         <div class="logo-container">
@@ -32,7 +36,7 @@
           <i data-lucide="x"></i>
         </button>
       </div>
-      
+
       <nav class="sidebar-nav">
         <ul>
           <li>
@@ -73,7 +77,8 @@
             </button>
           </li>
           <li>
-            <button class="nav-link reset-progress-btn" id="reset-progress-btn" data-tooltip="Reset Progress" style="border: none; text-align: left; width: 100%; font-family: inherit;">
+            <button class="nav-link reset-progress-btn" id="reset-progress-btn" data-tooltip="Reset Progress"
+              style="border: none; text-align: left; width: 100%; font-family: inherit;">
               <i data-lucide="rotate-ccw"></i>
               <span class="link-text">Reset Progress</span>
             </button>
@@ -81,9 +86,9 @@
         </ul>
       </nav>
     </aside>
-    
+
     <div class="main-wrapper">
-      
+
       <header class="mobile-header" id="mobile-header">
         <button class="mobile-menu-btn" id="mobile-menu-btn">
           <i data-lucide="menu"></i>
@@ -94,15 +99,16 @@
         </div>
         <div style="width: 40px;"></div>
       </header>
-      
+
       <main class="main-content">
-        
+
         <!-- Dashboard View Section -->
         <section id="dashboard-view" class="view-section active">
           <div class="mission-hero-banner">
             <div class="hero-copy-block">
               <h1 class="editorial-headline">AWS CERTIFICATION PREPARATION PLATFORM</h1>
-              <p class="mission-description">A focused workspace for reading, recall, and timed practice. Track what is complete, what is weak, and what deserves your next hour.</p>
+              <p class="mission-description">A focused workspace for reading, recall, and timed practice. Track what is
+                complete, what is weak, and what deserves your next hour.</p>
             </div>
             <div class="hero-cert-card" aria-label="Certification track">
               <div class="cert-card-header">
@@ -112,7 +118,8 @@
                   <strong class="cert-card-title">Cloud Practitioner</strong>
                 </div>
               </div>
-              <p class="cert-card-desc">Foundational cloud fluency, billing, security, services, and architecture patterns.</p>
+              <p class="cert-card-desc">Foundational cloud fluency, billing, security, services, and architecture
+                patterns.</p>
               <div class="hero-cert-grid">
                 <div class="cert-stat-item">
                   <span class="cert-stat-val">CLF-C02</span>
@@ -133,9 +140,9 @@
               </div>
             </div>
           </div>
-          
+
           <div class="dashboard-content-layout">
-            
+
             <div class="dashboard-stats-row">
               <div class="dashboard-stat-card">
                 <div class="stat-card-header">
@@ -145,12 +152,12 @@
                 <div class="stat-card-body">
                   <span class="stat-card-value" id="stats-progress-percent">0%</span>
                   <div class="progress-bar-container">
-                     <div class="progress-bar-fill" id="bento-progress-fill" style="width: 0%;"></div>
+                    <div class="progress-bar-fill" id="bento-progress-fill" style="width: 0%;"></div>
                   </div>
                   <span class="progress-sub-text" id="stats-progress-count">0 of 19 units completed</span>
                 </div>
               </div>
-              
+
               <div class="dashboard-stat-card">
                 <div class="stat-card-header">
                   <span class="stat-card-label">EXAMS TAKEN</span>
@@ -161,7 +168,7 @@
                   <span class="stat-card-subtext">Completed practice tests</span>
                 </div>
               </div>
-              
+
               <div class="dashboard-stat-card">
                 <div class="stat-card-header">
                   <span class="stat-card-label">AVERAGE SCORE</span>
@@ -173,9 +180,9 @@
                 </div>
               </div>
             </div>
-            
+
             <div class="dashboard-columns-grid">
-              
+
               <div class="dashboard-col">
                 <div class="dashboard-panel-card">
                   <div class="panel-card-header">
@@ -191,7 +198,7 @@
                     </div>
                   </div>
                 </div>
-                
+
                 <div class="dashboard-panel-card">
                   <div class="panel-card-header">
                     <span class="panel-label">WEAKEST DOMAIN</span>
@@ -204,7 +211,7 @@
                   </div>
                 </div>
               </div>
-              
+
               <div class="dashboard-col">
                 <div class="dashboard-panel-card">
                   <div class="panel-card-header">
@@ -226,7 +233,7 @@
                     </div>
                   </div>
                 </div>
-                
+
                 <div class="dashboard-panel-card">
                   <div class="panel-card-header">
                     <span class="panel-label">DOMAIN MASTERY</span>
@@ -236,9 +243,9 @@
                   </div>
                 </div>
               </div>
-              
+
             </div>
-            
+
             <div class="dashboard-table-row">
               <div class="dashboard-panel-card">
                 <div class="panel-card-header">
@@ -257,17 +264,18 @@
                     </thead>
                     <tbody id="recent-attempts-list">
                       <tr>
-                        <td colspan="4" class="empty-state">No exam attempts recorded yet. Start an exam to track performance.</td>
+                        <td colspan="4" class="empty-state">No exam attempts recorded yet. Start an exam to track
+                          performance.</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
               </div>
             </div>
-            
+
           </div>
         </section>
-        
+
         <!-- Study Notes View Section -->
         <section id="notes-view" class="view-section">
           <div class="notes-layout">
@@ -279,7 +287,7 @@
               <div class="notes-menu-list" id="notes-menu-list">
               </div>
             </div>
-            
+
             <div class="notes-body">
               <div class="notes-header-actions">
                 <div class="breadcrumbs">
@@ -295,25 +303,25 @@
                   </label>
                 </div>
               </div>
-              
+
               <div class="notes-main-content">
                 <div id="notes-content-placeholder" class="notes-content-markdown">
                   <div class="empty-notes-state">
                     <i data-lucide="book-open"></i>
                     <h2>Select a Study Unit</h2>
-                    <p>Choose a module from the left panel to begin reading the study notes.</p>
+                    <p>Choose a module from the module list to begin reading the study notes.</p>
                   </div>
                 </div>
               </div>
             </div>
-            
+
             <div class="notes-toc-panel">
               <h3>On this page</h3>
               <div class="toc-links" id="notes-toc-links">
               </div>
             </div>
           </div>
-          
+
           <div class="mobile-notes-action-bar">
             <button class="btn btn-secondary" id="mobile-toggle-notes-sidebar">
               <i data-lucide="book-open"></i>
@@ -325,14 +333,15 @@
             </button>
           </div>
         </section>
-        
+
         <!-- Practice Exams View Section -->
         <section id="exams-view" class="view-section">
           <div id="exams-list-container">
             <div class="exams-welcome-header">
               <span class="page-header-eyebrow">CLF-C02 &bull; Practice Test Center</span>
               <h1>Practice Exam Center</h1>
-              <p>23 realistic practice tests that replicate the actual exam style. Use Study Mode for instant feedback, or Exam Mode for a timed simulation.</p>
+              <p>23 realistic practice tests that replicate the actual exam style. Use Study Mode for instant feedback,
+                or Exam Mode for a timed simulation.</p>
               <div class="page-header-badge-row">
                 <span class="page-stat-pill"><strong>23</strong> Exams</span>
                 <span class="page-stat-pill"><strong>50–65</strong> Questions each</span>
@@ -342,7 +351,7 @@
             <div class="exams-grid" id="exams-grid">
             </div>
           </div>
-          
+
           <!-- Exam Interaction Screen -->
           <div id="active-exam-container" style="display: none;" class="active-exam-shell">
 
@@ -390,17 +399,17 @@
                     <div class="explanation-text" id="explanation-text-content"></div>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            <div class="exam-nav-bar">
-              <button class="btn btn-secondary" id="quiz-prev-btn">
-                <i data-lucide="chevron-left"></i> Prev
-              </button>
-              <button class="btn btn-secondary" id="quiz-check-btn" style="display:none;">Check Answer</button>
-              <button class="btn btn-primary" id="quiz-next-btn">
-                Next <i data-lucide="chevron-right"></i>
-              </button>
+                <div class="exam-nav-bar">
+                  <button class="btn btn-secondary" id="quiz-prev-btn">
+                    <i data-lucide="chevron-left"></i> Prev
+                  </button>
+                  <button class="btn btn-secondary" id="quiz-check-btn" style="display:none;">Check Answer</button>
+                  <button class="btn btn-primary" id="quiz-next-btn">
+                    Next <i data-lucide="chevron-right"></i>
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div class="mobile-exam-action-bar">
@@ -417,7 +426,7 @@
             </div>
 
           </div>
-          
+
           <!-- Exam Results and Review Screen -->
           <div id="exam-results-container" style="display: none;" class="results-shell">
 
@@ -425,8 +434,9 @@
               <div class="results-hero-left">
                 <div class="score-ring-wrap">
                   <svg class="score-ring" viewBox="0 0 120 120">
-                    <circle class="score-ring-track" cx="60" cy="60" r="50"/>
-                    <circle class="score-ring-fill" id="score-ring-fill" cx="60" cy="60" r="50" stroke-dasharray="314" stroke-dashoffset="314"/>
+                    <circle class="score-ring-track" cx="60" cy="60" r="50" />
+                    <circle class="score-ring-fill" id="score-ring-fill" cx="60" cy="60" r="50" stroke-dasharray="314"
+                      stroke-dashoffset="314" />
                   </svg>
                   <div class="score-ring-label">
                     <span class="score-ring-pct" id="results-score-percent">0%</span>
@@ -486,18 +496,17 @@
                 <div class="results-question-frame" id="results-active-question-details">
                   <p class="empty-state">Select a question to review.</p>
                 </div>
+                <div class="results-nav-bar" id="results-review-nav-buttons" style="display:none;">
+                  <button class="btn btn-secondary" id="results-prev-btn">
+                    <i data-lucide="arrow-left"></i> Prev
+                  </button>
+                  <span class="results-nav-counter" id="results-nav-counter">1 / 50</span>
+                  <button class="btn btn-secondary" id="results-next-btn">
+                    Next <i data-lucide="arrow-right"></i>
+                  </button>
+                </div>
               </div>
 
-            </div>
-
-            <div class="results-nav-bar" id="results-review-nav-buttons" style="display:none;">
-              <button class="btn btn-secondary" id="results-prev-btn">
-                <i data-lucide="arrow-left"></i> Prev
-              </button>
-              <span class="results-nav-counter" id="results-nav-counter">1 / 50</span>
-              <button class="btn btn-secondary" id="results-next-btn">
-                Next <i data-lucide="arrow-right"></i>
-              </button>
             </div>
 
             <div class="mobile-exam-action-bar">
@@ -515,13 +524,14 @@
 
           </div>
         </section>
-        
+
         <!-- Syllabus View Section -->
         <section id="syllabus-view" class="view-section">
           <div class="syllabus-header">
             <span class="page-header-eyebrow">CLF-C02 &bull; Official Exam Guide</span>
             <h1>Syllabus Guide &amp; Domain Breakdown</h1>
-            <p>Review the official exam weightings and key domains. Click any domain to expand its sub-topics and objectives.</p>
+            <p>Review the official exam weightings and key domains. Click any domain to expand its sub-topics and
+              objectives.</p>
             <div class="page-header-badge-row">
               <span class="page-stat-pill"><strong>4</strong> Domains</span>
               <span class="page-stat-pill"><strong>~90 min</strong> Exam Duration</span>
@@ -533,13 +543,14 @@
             </div>
           </div>
         </section>
-        
+
         <!-- Mind Map View Section -->
         <section id="mindmap-view" class="view-section">
           <div class="mindmap-header">
             <span class="page-header-eyebrow">19 Units &bull; 4 Domains</span>
             <h1>Topic Mind Map</h1>
-            <p>All AWS Cloud Practitioner topics organized by domain. Click any unit to jump straight to its study notes.</p>
+            <p>All AWS Cloud Practitioner topics organized by domain. Click any unit to jump straight to its study
+              notes.</p>
             <div class="page-header-badge-row">
               <span class="page-stat-pill" id="mindmap-completed-count"><strong>0</strong> Units Done</span>
               <span class="page-stat-pill" id="mindmap-progress-pill">0% Complete</span>
@@ -548,7 +559,7 @@
           <div class="mindmap-container" id="mindmap-container">
           </div>
         </section>
-        
+
       </main>
     </div>
   </div>
@@ -557,7 +568,9 @@
   <div class="modal-underlay" id="submit-modal" style="display: none;">
     <div class="modal-content">
       <h2>Submit Exam?</h2>
-      <p>Are you sure you want to submit your exam? You have answered <span id="modal-answered-count">0</span> out of <span id="modal-total-count">50</span> questions.</p>
+      <p>Are you sure you want to submit your exam? You have answered <span id="modal-answered-count">0</span> out of
+        <span id="modal-total-count">50</span> questions.
+      </p>
       <div class="modal-actions">
         <button class="btn btn-secondary" id="modal-cancel-btn">Cancel</button>
         <button class="btn btn-success" id="modal-submit-confirm-btn">Confirm</button>
@@ -571,7 +584,21 @@
       <p>Are you sure you want to reset all your study progress and exam scores? This action cannot be undone.</p>
       <div class="modal-actions">
         <button class="btn btn-secondary" id="reset-modal-cancel-btn">Cancel</button>
-        <button class="btn btn-danger" id="reset-modal-confirm-btn" style="background-color: var(--danger-color); color: white;">Confirm Reset</button>
+        <button class="btn btn-danger" id="reset-modal-confirm-btn"
+          style="background-color: var(--danger-color); color: white;">Confirm Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-underlay" id="custom-alert-modal" style="display: none; z-index: 4000;">
+    <div class="modal-content">
+      <h2 id="custom-alert-title" style="margin-bottom: 12px;"></h2>
+      <p id="custom-alert-message"
+        style="margin-top: 10px; margin-bottom: 24px; color: var(--text-secondary); font-size: 14.5px; line-height: 1.5;">
+      </p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="custom-alert-cancel-btn" style="display: none;">Cancel</button>
+        <button class="btn btn-primary" id="custom-alert-confirm-btn">OK</button>
       </div>
     </div>
   </div>
@@ -580,4 +607,5 @@
 
   <script src="assets/js/platform.js"></script>
 </body>
+
 </html>

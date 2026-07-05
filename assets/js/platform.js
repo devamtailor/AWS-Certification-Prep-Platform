@@ -49,6 +49,41 @@ function createIconsSafe() {
   }
 }
 
+window.showAppNotification = function(title, message, isConfirm = false, onConfirm = null, onCancel = null) {
+  const modal = document.getElementById('custom-alert-modal');
+  const titleEl = document.getElementById('custom-alert-title');
+  const msgEl = document.getElementById('custom-alert-message');
+  const cancelBtn = document.getElementById('custom-alert-cancel-btn');
+  const confirmBtn = document.getElementById('custom-alert-confirm-btn');
+
+  if (!modal || !titleEl || !msgEl || !cancelBtn || !confirmBtn) return;
+
+  titleEl.innerText = title;
+  msgEl.innerText = message;
+  
+  if (isConfirm) {
+    cancelBtn.style.display = 'inline-flex';
+    confirmBtn.innerText = 'Confirm';
+    confirmBtn.className = 'btn btn-primary';
+  } else {
+    cancelBtn.style.display = 'none';
+    confirmBtn.innerText = 'OK';
+    confirmBtn.className = 'btn btn-primary';
+  }
+
+  modal.style.display = 'flex';
+
+  confirmBtn.onclick = () => {
+    modal.style.display = 'none';
+    if (onConfirm) onConfirm();
+  };
+
+  cancelBtn.onclick = () => {
+    modal.style.display = 'none';
+    if (onCancel) onCancel();
+  };
+};
+
 document.addEventListener('DOMContentLoaded', () => {
   loadProgressFromStorage();
   initRouting();
@@ -1092,8 +1127,9 @@ function startTimer() {
     
     if (ae.timeRemaining <= 0) {
       clearInterval(ae.timerInterval);
-      alert('Time is up! Your exam will be submitted automatically.');
-      submitActiveExam();
+      showAppNotification('Time is Up', 'Time is up! Your exam will be submitted automatically.', false, () => {
+        submitActiveExam();
+      });
     }
   }, 1000);
   
@@ -1253,7 +1289,7 @@ function checkQuestionAnswer() {
   const userAnswers = ae.userAnswers[idx] || [];
   
   if (userAnswers.length === 0) {
-    alert('Please select an option first before checking the answer.');
+    showAppNotification('Selection Required', 'Please select an option first before checking the answer.');
     return;
   }
   
@@ -1576,13 +1612,18 @@ window.showReviewQuestion = function(index) {
 };
 
 function exitExamSession() {
-  if (confirm('Are you sure you want to exit the exam? Your current progress will be lost.')) {
-    if (state.activeExam.timerInterval) {
-      clearInterval(state.activeExam.timerInterval);
+  showAppNotification(
+    'Exit Exam?',
+    'Are you sure you want to exit the exam? Your current progress will be lost.',
+    true,
+    () => {
+      if (state.activeExam.timerInterval) {
+        clearInterval(state.activeExam.timerInterval);
+      }
+      window.location.hash = '#exams';
+      handleRouteChange();
     }
-    window.location.hash = '#exams';
-    handleRouteChange();
-  }
+  );
 }
 
 function setupSyllabusView() {
