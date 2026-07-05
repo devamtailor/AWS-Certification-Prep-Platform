@@ -1,8 +1,6 @@
-﻿/* AWS CloudPrep Platform Styling */
-
-/* ==================== DESIGN TOKENS & THEMES ==================== */
+/* Design tokens and theme settings */
 :root {
-  /* Common Variables */
+
   --font-heading: 'Outfit', sans-serif;
   --font-body: 'Inter', sans-serif;
   --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -10,7 +8,7 @@
   --border-radius-md: 8px;
   --border-radius-lg: 12px;
   
-  /* Theme Settings: Default Mission Control Dark */
+
   --bg-primary: #070913;
   --bg-secondary: #111424;
   --bg-tertiary: #1b213b;
@@ -20,7 +18,7 @@
   --text-secondary: #a3b3cc;
   --text-muted: #5e7399;
   
-  /* AWS Orange Accent */
+
   --accent-color: #ff9900;
   --accent-hover: #ec7211;
   --accent-glow: rgba(255, 153, 0, 0.15);
@@ -57,7 +55,8 @@
   --glass-blur: blur(8px);
 }
 
-/* ==================== GLOBAL RESET & LAYOUT ==================== */
+
+/* Global base reset and layouts */
 * {
   margin: 0;
   padding: 0;
@@ -79,7 +78,8 @@ body {
   position: relative;
 }
 
-/* Scrollbar Styling */
+
+/* Custom scrollbar shapes and track colors */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -95,7 +95,8 @@ body {
   background: var(--text-muted);
 }
 
-/* ==================== SIDEBAR COMPONENT ==================== */
+
+/* Sidebar navigation layouts and active indicators */
 .sidebar {
   width: 260px;
   background-color: var(--bg-secondary);
@@ -248,7 +249,8 @@ body {
   border-color: rgba(239, 68, 68, 0.2);
 }
 
-/* ==================== CONTENT WRAPPER ==================== */
+
+/* Main content wrapper and mobile drawer menu styling */
 .main-wrapper {
   flex-grow: 1;
   display: flex;
@@ -309,7 +311,8 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* BUTTONS */
+
+/* Button components and aesthetic variant classes */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -398,7 +401,8 @@ body {
   padding: 10px;
 }
 
-/* ==================== 1. DASHBOARD VIEW ==================== */
+
+/* Dashboard views, metric stats, and hero banner split templates */
 .view-header-banner {
   background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
   border: 1px solid var(--border-color);
@@ -427,7 +431,7 @@ body {
   max-width: 600px;
 }
 
-/* Redesigned Hero Banner - Two-Column Split Layout */
+
 .mission-hero-banner {
   display: grid;
   grid-template-columns: 1.2fr 0.8fr;
@@ -497,7 +501,7 @@ body {
   line-height: 1.5;
 }
 
-/* AWS Certification Badge Card */
+
 .hero-cert-card {
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
@@ -606,6 +610,7 @@ body {
   color: var(--text-secondary);
 }
 
+/* Bento components and dynamic progress telemetry */
 .mission-bento-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -666,7 +671,7 @@ body {
 .text-green { color: var(--success-color) !important; }
 .text-purple { color: #a855f7 !important; }
 
-/* Bento components */
+
 .current-track-badge {
   font-size: 10px;
   font-weight: 700;
@@ -728,7 +733,7 @@ body {
   color: var(--text-secondary);
 }
 
-/* Uplink status */
+
 .readiness-block {
   margin-bottom: 12px;
 }
@@ -769,7 +774,7 @@ body {
   color: var(--text-muted);
 }
 
-/* Next deployment bento */
+
 .continue-card-bento {
   display: flex;
   flex-direction: column;
@@ -808,7 +813,7 @@ body {
   font-size: 12px;
 }
 
-/* Systems observability */
+
 .domain-mastery-list {
   display: flex;
   flex-direction: column;
@@ -839,7 +844,7 @@ body {
   background-color: var(--primary-blue);
 }
 
-/* Pipeline expansions */
+
 .cert-paths-pipeline {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -886,7 +891,7 @@ body {
   font-weight: 700;
 }
 
-/* Telemetry table container */
+
 .recent-exams-table-container {
   overflow-x: auto;
 }
@@ -916,7 +921,12 @@ body {
   background-color: rgba(255, 255, 255, 0.02);
 }
 
-/* Study notes visual identity motifs banner */
+.recent-exams-table tbody tr.clickable-row:hover {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary);
+}
+
+
 .notes-service-header-banner {
   display: flex;
   justify-content: space-between;
@@ -959,7 +969,7 @@ body {
   flex-shrink: 0;
 }
 
-/* IAM access shield motif */
+
 .iam-motif::before {
   content: "";
   position: absolute;
@@ -977,7 +987,7 @@ body {
   border-radius: 1px;
 }
 
-/* VPC Network overlay motif */
+
 .vpc-motif::before {
   content: "";
   position: absolute;
@@ -995,7 +1005,7 @@ body {
   border-radius: 20%;
 }
 
-/* EC2 Compute bars motif */
+
 .ec2-motif::before {
   content: "";
   position: absolute;
@@ -1012,7 +1022,7 @@ body {
   opacity: 0.7;
 }
 
-/* S3 Storage stack motif */
+
 .s3-motif::before {
   content: "";
   position: absolute;
@@ -1030,7 +1040,7 @@ body {
   border-radius: 2px;
 }
 
-/* Lambda Greek character motif */
+
 .lambda-motif::before {
   content: "\u03bb";
   position: absolute;
@@ -1041,7 +1051,7 @@ body {
   font-weight: bold;
 }
 
-/* RDS grid database motif */
+
 .rds-motif::before {
   content: "";
   position: absolute;
@@ -1084,7 +1094,8 @@ body {
   padding: 40px !important;
 }
 
-/* ==================== 2. STUDY NOTES VIEW ==================== */
+
+/* Study notes section layouts, sidebars, and search filters */
 .notes-layout {
   display: grid;
   grid-template-columns: 280px 1fr 220px;
@@ -1220,7 +1231,7 @@ body {
   color: var(--text-primary);
 }
 
-/* Custom Checkbox Toggle */
+
 .checkbox-container {
   display: flex;
   align-items: center;
@@ -1281,6 +1292,8 @@ body {
   flex-grow: 1;
   padding: 32px;
   overflow-y: auto;
+  overflow-x: hidden;
+  min-width: 0;
 }
 
 .empty-notes-state {
@@ -1306,7 +1319,7 @@ body {
   margin-bottom: 8px;
 }
 
-/* ==================== MARKDOWN LAYOUT STYLING ==================== */
+
 .notes-content-markdown {
   line-height: 1.6;
   font-size: 15px;
@@ -1426,7 +1439,7 @@ body {
   font-size: 13px;
 }
 
-/* Notes TOC Panel */
+
 .notes-toc-panel {
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
@@ -1471,7 +1484,8 @@ body {
   font-size: 12.5px;
 }
 
-/* ==================== 3. PRACTICE EXAMS VIEW ==================== */
+
+/* Practice exams dashboard layout and entry panels */
 .exams-welcome-header {
   margin-bottom: 32px;
 }
@@ -1552,7 +1566,8 @@ body {
   flex-grow: 1;
 }
 
-/* ==================== ACTIVE EXAM CONTAINER ==================== */
+
+/* Active exam timing display and responsive headers */
 .exam-header-bar {
   display: flex;
   align-items: center;
@@ -1838,7 +1853,7 @@ body {
   line-height: 1.35;
 }
 
-/* Practice mode response visual aids */
+
 .option-choice-wrapper.graded-correct {
   border-color: var(--success-color);
   background-color: var(--success-bg);
@@ -1893,10 +1908,11 @@ body {
   padding-top: 20px;
 }
 
-/* ==================== 4. EXAM RESULTS VIEW â€” replaced by enhancement layer below ==================== */
+
 .results-card { display: contents; } /* neutralised */
 
-/* ==================== 5. SYLLABUS / ACCORDION ==================== */
+
+/* Syllabus layout, weighting details, and topic list details */
 .syllabus-header {
   margin-bottom: 32px;
 }
@@ -2011,7 +2027,8 @@ body {
   margin-bottom: 4px;
 }
 
-/* ==================== 6. MIND MAP IFRAME ==================== */
+
+/* Mind Map layout and iframe viewer wrapper details */
 .mindmap-header {
   margin-bottom: 24px;
 }
@@ -2041,7 +2058,8 @@ body {
   border: none;
 }
 
-/* ==================== MODALS ==================== */
+
+/* Warnings, modals, and transition backdrops */
 .modal-underlay {
   position: fixed;
   top: 0;
@@ -2093,7 +2111,7 @@ body {
   justify-content: center;
 }
 
-/* ==================== RESPONSIVE ADAPTATIONS ==================== */
+
 @media (max-width: 1024px) {
   .notes-layout {
     grid-template-columns: 240px 1fr;
@@ -2186,7 +2204,7 @@ body {
   border-bottom-color: var(--accent-hover) !important;
 }
 
-/* ==================== MINDMAP SECTION ==================== */
+
 #mindmap-view {
   display: none;
   flex-direction: column;
@@ -2220,7 +2238,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Topic Tree */
+
 .topic-tree {
   display: flex;
   flex-direction: column;
@@ -2354,13 +2372,14 @@ body {
   color: var(--text-muted);
 }
 
-/* Domain colour accents */
+
 .domain-color-1 { background: rgba(255, 153, 0, 0.15); color: var(--accent-color); }
 .domain-color-2 { background: rgba(239, 68, 68, 0.15); color: #f87171; }
 .domain-color-3 { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
 .domain-color-4 { background: rgba(16, 185, 129, 0.15); color: var(--success-color); }
 
-/* ==================== 2026 PRODUCT REDESIGN LAYER ==================== */
+
+/* Redesign layout using Geist font family tokens and layout overrides */
 :root {
   --font-heading: 'Geist', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-body: 'Geist', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -2579,7 +2598,7 @@ textarea {
   color: var(--danger-color);
 }
 
-/* Collapsed Sidebar overrides */
+
 .sidebar.collapsed {
   width: 64px;
   padding: 24px 8px;
@@ -2635,7 +2654,7 @@ textarea {
   display: none;
 }
 
-/* Tooltips for collapsed sidebar links on desktop */
+
 @media (min-width: 1101px) {
   .sidebar.collapsed .nav-link,
   .sidebar.collapsed .theme-toggle-btn,
@@ -2751,14 +2770,14 @@ textarea {
   line-height: 1.7;
 }
 
-/* Redesigned Structured Dashboard Layout */
+
 .dashboard-content-layout {
   display: flex;
   flex-direction: column;
   gap: 28px;
 }
 
-/* Top Metrics Stats Row */
+
 .dashboard-stats-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -2822,7 +2841,7 @@ textarea {
   color: var(--text-secondary);
 }
 
-/* Two-Column Grid */
+
 .dashboard-columns-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -2878,7 +2897,7 @@ textarea {
   height: 18px;
 }
 
-/* Progress bar container alignment */
+
 .progress-bar-container {
   height: 10px;
   background: var(--bg-tertiary);
@@ -2917,7 +2936,7 @@ textarea {
   display: block;
 }
 
-/* Reusing component style overrides */
+
 .continue-card-bento {
   min-height: 140px;
   display: flex;
@@ -3692,7 +3711,8 @@ textarea {
   }
 }
 
-/* ==================== RESPONSIVE SYSTEM V3: ALL VIEWPORTS ==================== */
+
+/* Mobile first and cross-viewport responsive styling rules */
 html,
 body {
   width: 100%;
@@ -3743,14 +3763,32 @@ table {
   overflow-wrap: anywhere;
 }
 
+.table-container-outer {
+  margin-bottom: 24px;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden; /* Clips the inner scrollable container's corners perfectly! */
+  position: relative;
+  transform: translateZ(0); /* Hardware accelerated clipping context */
+  -webkit-transform: translateZ(0);
+}
+
 .recent-exams-table-container,
-.notes-content-markdown table {
+.responsive-table-wrapper {
   -webkit-overflow-scrolling: touch;
+  overflow-x: auto;
+  width: 100%;
 }
 
 .notes-content-markdown table {
-  display: block;
-  overflow-x: auto;
+  width: 100%;
+  border-collapse: collapse !important;
+  display: table !important;
+  margin: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
 }
 
 @media (min-width: 1500px) {
@@ -3937,7 +3975,7 @@ table {
   }
 
   .notes-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .notes-sidebar {
@@ -3953,10 +3991,15 @@ table {
 
   .notes-body {
     min-height: 0;
+    max-width: 100%;
+    min-width: 0;
   }
 
   .notes-main-content {
     padding: 28px;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
   }
 
   .exam-header-bar {
@@ -4024,8 +4067,8 @@ table {
   }
 
   .editorial-headline {
-    font-size: clamp(42px, 15vw, 64px);
-    line-height: 0.92;
+    font-size: clamp(28px, 10vw, 42px);
+    line-height: 1.05;
   }
 
   .mission-description,
@@ -4233,7 +4276,8 @@ table {
   }
 
   .editorial-headline {
-    font-size: clamp(36px, 16vw, 52px);
+    font-size: clamp(24px, 8vw, 32px);
+    line-height: 1.1;
   }
 
   .system-status-indicator,
@@ -4368,7 +4412,8 @@ table {
   }
 }
 
-/* Drawer Backdrop — invisible, no effects, no pointer events ever */
+
+/* Drawer backdrop layout and tap-outside helper styling */
 .drawer-backdrop {
   position: fixed;
   inset: 0;
@@ -4382,14 +4427,15 @@ table {
   opacity: 0; /* stays invisible — tap-outside handled by JS */
 }
 
-/* No blur on main content — removed entirely */
+
 body.drawer-is-open .main-content,
 body .main-content {
   filter: none !important;
   transition: none !important;
 }
 
-/* Mobile Action Bars */
+
+/* Mobile notes and exam action navigation wrappers */
 .mobile-notes-action-bar,
 .mobile-exam-action-bar {
   display: none; /* Hidden on desktop */
@@ -4420,7 +4466,7 @@ body .main-content {
     background: rgba(255, 253, 248, 0.96);
   }
 
-  /* Notes bar: just one button, centred */
+  
   .mobile-notes-action-bar .btn {
     flex: 1;
     min-height: 40px;
@@ -4434,7 +4480,7 @@ body .main-content {
     max-width: 200px;
   }
 
-  /* Exam/Results bar: Questions toggle (grows) + Prev + Next */
+  
   .mobile-exam-action-bar .btn-mob-toggle {
     flex: 1;                  /* takes remaining space */
     min-height: 40px;
@@ -4463,7 +4509,7 @@ body .main-content {
     pointer-events: none;
   }
 
-  /* Transform sidebars into slide-up drawers */
+  
   .notes-sidebar,
   .notes-toc-panel,
   .exam-sidebar-nav,
@@ -4489,7 +4535,7 @@ body .main-content {
     display: block !important;
   }
 
-  /* When drawer is open, slide it up — sits above action bar */
+  
   .notes-sidebar.drawer-open,
   .notes-toc-panel.drawer-open,
   .exam-sidebar-nav.drawer-open,
@@ -4497,7 +4543,7 @@ body .main-content {
     bottom: 60px !important; /* sit above the mobile action bar */
   }
 
-  /* Padding at the bottom of main scroll wrappers to prevent content from being hidden behind sticky action bars */
+  
   .notes-body,
   .exam-main-panel,
   .results-main-panel {
@@ -4506,15 +4552,16 @@ body .main-content {
 }
 
 
-/* ==================== UI ENHANCEMENT LAYER ==================== */
 
-/* ---------- SIDEBAR IMPROVEMENTS ---------- */
+
+
+/* Redesigned sidebar overrides and logo line borders */
 .sidebar {
   background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
   transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), padding 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Sidebar logo accent line */
+
 .sidebar-header {
   position: relative;
   padding-bottom: 20px;
@@ -4547,7 +4594,7 @@ body .main-content {
   transition: opacity 0.2s ease, width 0.2s ease;
 }
 
-/* Nav link polish */
+
 .nav-link {
   border-radius: 8px;
   border-left: 3px solid transparent;
@@ -4572,15 +4619,15 @@ body .main-content {
   border-left-color: var(--border-color);
 }
 
-/* Utility nav items (theme/reset) get a top separator */
+
 .sidebar-nav li:nth-last-child(2) {
   margin-top: 8px;
   padding-top: 12px;
   border-top: 1px solid var(--border-color);
 }
 
-/* ---------- PAGE HEADER COMPONENT ---------- */
-/* Shared page header card for Syllabus, Mind Map, Practice Exams */
+
+
 .page-header-card {
   display: flex;
   align-items: flex-start;
@@ -4715,8 +4762,8 @@ body .main-content {
   color: var(--accent-color);
 }
 
-/* ---------- SECTION-SPECIFIC OVERRIDES ---------- */
-/* Replace the raw h1+p syllabus header with the new card */
+
+
 .syllabus-header,
 .mindmap-header {
   background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
@@ -4758,7 +4805,7 @@ body .main-content {
   background: linear-gradient(135deg, #ffffff 0%, #f4f6fa 100%);
 }
 
-/* Eyebrow label above h1 in page headers */
+
 .syllabus-header h1,
 .mindmap-header h1 {
   font-size: clamp(24px, 3vw, 34px) !important;
@@ -4779,8 +4826,7 @@ body .main-content {
   z-index: 1;
 }
 
-/* Insert eyebrow label before h1 via wrapper in HTML */
-/* We add it via a before-pseudo on the header wrapper */
+
 .syllabus-header::before,
 .mindmap-header::before {
   content: '';
@@ -4792,7 +4838,6 @@ body .main-content {
   background: linear-gradient(90deg, var(--accent-color), var(--accent-hover), transparent);
 }
 
-/* Exams welcome header â€” same treatment */
 .exams-welcome-header {
   background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
   border: 1px solid var(--border-color);
@@ -4848,7 +4893,7 @@ body .main-content {
   max-width: 580px;
 }
 
-/* ---------- DOMAIN ACCORDION POLISH ---------- */
+
 .domain-accordion {
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   border-left: 3px solid transparent;
@@ -4888,7 +4933,7 @@ body .main-content {
   color: var(--text-muted);
 }
 
-/* Uniform accent for all domain badges */
+
 .domain-accordion .domain-letter-badge {
   background: var(--accent-glow);
   color: var(--accent-color);
@@ -4929,7 +4974,7 @@ body .main-content {
   flex-shrink: 0;
 }
 
-/* ---------- MIND MAP TOPIC TREE POLISH ---------- */
+
 .topic-domain-card {
   border-left: 3px solid transparent;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -4943,7 +4988,7 @@ body .main-content {
   border-left-color: var(--accent-color);
 }
 
-/* Uniform accent for all mind map domain badges */
+
 .topic-domain-card .topic-domain-badge {
   background: var(--accent-glow);
   color: var(--accent-color);
@@ -5024,7 +5069,7 @@ body .main-content {
   border: 1px solid var(--border-color);
 }
 
-/* ---------- DASHBOARD HERO REFINEMENTS ---------- */
+
 .mission-hero-banner {
   border-radius: 12px;
   position: relative;
@@ -5041,7 +5086,7 @@ body .main-content {
   border-radius: 12px 12px 0 0;
 }
 
-/* ---------- EXAM PANEL CARD POLISH ---------- */
+
 .exam-panel-card {
   border-left: 3px solid transparent;
 }
@@ -5050,7 +5095,7 @@ body .main-content {
   border-left-color: var(--accent-color);
 }
 
-/* ---------- STAT CARD ACCENT LINE ---------- */
+
 .dashboard-stat-card {
   position: relative;
   overflow: hidden;
@@ -5073,18 +5118,18 @@ body .main-content {
   opacity: 1;
 }
 
-/* ---------- NOTES SIDEBAR ACTIVE STATE ---------- */
+
 .notes-item-btn.active {
   background: linear-gradient(90deg, var(--accent-glow) 0%, transparent 100%);
 }
 
-/* ---------- EXAM HEADER BAR POLISH ---------- */
+
 .exam-header-bar {
   background: linear-gradient(90deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
   border-left: 3px solid var(--accent-color);
 }
 
-/* ---------- SIDEBAR COLLAPSE BUTTON POLISH ---------- */
+
 .sidebar-toggle-btn {
   background: var(--bg-tertiary);
   border: 1px solid var(--border-color);
@@ -5104,7 +5149,7 @@ body .main-content {
   color: var(--text-primary);
 }
 
-/* ---------- MOBILE HEADER ACCENT BAR ---------- */
+
 .mobile-header::after {
   content: '';
   position: absolute;
@@ -5120,11 +5165,6 @@ body .main-content {
 }
 
 
-/* ============================================================
-   RESULTS VIEW â€” FULL REDESIGN
-   ============================================================ */
-
-/* Container */
 #exam-results-container {
   display: flex;
   flex-direction: column;
@@ -5170,7 +5210,7 @@ body .main-content {
   background: linear-gradient(135deg, #fff 0%, #f4f6fa 100%);
 }
 
-/* Left side of hero */
+
 .results-hero-left {
   display: flex;
   align-items: center;
@@ -5181,7 +5221,7 @@ body .main-content {
   min-width: 0;
 }
 
-/* Score ring */
+
 .score-ring-wrap {
   position: relative;
   width: 96px;
@@ -5240,7 +5280,7 @@ body .main-content {
 .score-ring-verdict.fail  { color: var(--danger-color); }
 .score-ring-verdict.study { color: var(--accent-color); }
 
-/* Results meta text */
+
 .results-meta {
   display: flex;
   flex-direction: column;
@@ -5304,7 +5344,7 @@ body .main-content {
   white-space: nowrap;
 }
 
-/* Hero action buttons */
+
 .results-hero-actions {
   display: flex;
   flex-direction: column;
@@ -5320,7 +5360,7 @@ body .main-content {
   font-size: 13px;
 }
 
-/* ---- Review Body ---- */
+
 .results-body {
   display: grid;
   grid-template-columns: 260px 1fr;
@@ -5330,7 +5370,7 @@ body .main-content {
   overflow: hidden;
 }
 
-/* ---- Left Nav Panel ---- */
+
 .results-sidebar-nav {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
@@ -5422,7 +5462,7 @@ body .main-content {
   font-weight: 800;
 }
 
-/* ---- Right Question Panel ---- */
+
 .results-main-panel {
   display: flex;
   flex-direction: column;
@@ -5431,7 +5471,7 @@ body .main-content {
   overflow: hidden;
 }
 
-/* The question frame itself scrolls */
+
 .results-question-frame {
   flex: 1;
   overflow-y: auto;
@@ -5445,7 +5485,7 @@ body .main-content {
 .results-question-frame.correct-highlight  { border-left: 4px solid var(--success-color); }
 .results-question-frame.incorrect-highlight { border-left: 4px solid var(--danger-color); }
 
-/* Question header row */
+
 .rq-header {
   display: flex;
   align-items: center;
@@ -5515,7 +5555,7 @@ body .main-content {
   border: 1px solid rgba(239,68,68,0.25);
 }
 
-/* Question text */
+
 .rq-question-text {
   font-size: 16px;
   font-weight: 500;
@@ -5524,7 +5564,7 @@ body .main-content {
   margin-bottom: 20px;
 }
 
-/* Options inside results */
+
 .rq-options {
   display: flex;
   flex-direction: column;
@@ -5562,7 +5602,7 @@ body .main-content {
   color: white;
 }
 
-/* Answer summary block */
+
 .rq-answer-block {
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
@@ -5601,7 +5641,7 @@ body .main-content {
 .rq-answer-value.correct  { color: var(--success-color); }
 .rq-answer-value.incorrect { color: var(--danger-color); }
 
-/* Explanation */
+
 .rq-explanation {
   display: flex;
   align-items: flex-start;
@@ -5625,7 +5665,7 @@ body .main-content {
   color: var(--text-secondary);
 }
 
-/* ---- Bottom Nav Bar (pinned below question frame) ---- */
+
 .results-nav-bar {
   display: flex;
   align-items: center;
@@ -5658,11 +5698,6 @@ body .main-content {
   white-space: nowrap;
 }
 
-/* ============================================================
-   RESULTS â€” RESPONSIVE
-   ============================================================ */
-
-/* Tablet: stack body to single column */
 @media (max-width: 900px) {
   .results-body {
     grid-template-columns: 1fr;
@@ -5704,7 +5739,7 @@ body .main-content {
   }
 }
 
-/* Mobile: compact hero, hide desktop side panel, show drawer */
+
 @media (max-width: 640px) {
   .results-hero {
     padding: 18px 16px;
@@ -5753,7 +5788,7 @@ body .main-content {
   }
 
   .results-sidebar-nav {
-    /* On mobile shown as a drawer */
+    
     position: fixed;
     left: 0; right: 0; bottom: 0;
     border-radius: 14px 14px 0 0;
@@ -5787,27 +5822,22 @@ body .main-content {
   }
 }
 
-/* Mobile action bar â€” show prev/next + nav toggle */
 @media (max-width: 1100px) {
   .results-body {
-    padding-bottom: 72px; /* room for sticky bar */
+    padding-bottom: 72px;
   }
 }
 
 
 
 
-/* ============================================================
-   EXAM & RESULTS — FINAL LAYOUT
-   Desktop: sidebar sticky left, fixed nav bar bottom-right.
-   Mobile: sidebar is a slide-up drawer (existing system),
-           mobile-exam-action-bar has Prev + Questions + Next.
-   ============================================================ */
 
-/* --- Remove old inline button row --- */
+
+
 .exam-action-buttons { display: none !important; }
 
-/* --- Desktop (>900px): two-column layout --- */
+
+/* Desktop sticky split layout details and navigation buttons */
 @media (min-width: 901px) {
 
   .exam-layout {
@@ -5818,7 +5848,7 @@ body .main-content {
     overflow: visible !important;
   }
 
-  /* Sidebar sticks in view while question scrolls */
+  
   .exam-sidebar-nav {
     position: sticky !important;
     top: 16px !important;
@@ -5857,7 +5887,7 @@ body .main-content {
     overflow: visible !important;
   }
 
-  /* Results layout — same pattern */
+  
   .results-body {
     display: grid !important;
     grid-template-columns: 200px 1fr !important;
@@ -5905,7 +5935,7 @@ body .main-content {
     border-radius: 10px !important;
   }
 
-  /* Fixed nav bars — always at bottom, never scroll */
+  
   .exam-nav-bar {
     display: flex !important;
     align-items: center !important;
@@ -5940,12 +5970,12 @@ body .main-content {
     box-shadow: 0 -2px 10px rgba(0,0,0,0.1) !important;
   }
 
-  /* Pad content so fixed bar doesn't cover it */
+  
   .active-exam-shell,
   .results-shell { padding-bottom: 68px; }
 }
 
-/* --- Mobile (≤900px): sidebar is a drawer, nav bars hidden --- */
+
 @media (max-width: 900px) {
   /* Single column — sidebar is out of flow (handled by drawer system at line ~4460) */
   .exam-layout,
@@ -5953,7 +5983,7 @@ body .main-content {
     display: block !important;
   }
 
-  /* Sidebar is handled as a drawer by the CSS at line ~4460 — no overrides needed */
+  
 
   .question-nav-grid {
     display: grid !important;
@@ -5967,16 +5997,16 @@ body .main-content {
     gap: 6px !important;
   }
 
-  /* Desktop fixed bars hidden — mobile-exam-action-bar handles Prev/Next */
+  
   .exam-nav-bar,
   .results-nav-bar { display: none !important; }
 
-  /* Pad for mobile action bar */
+  
   .active-exam-shell,
   .results-shell { padding-bottom: 68px; }
 }
 
-/* --- Nav button styles --- */
+
 .exam-nav-bar .btn,
 .results-nav-bar .btn { min-width: 88px; }
 
@@ -5992,7 +6022,7 @@ body .main-content {
   margin: 0 2px;
 }
 
-/* --- Mobile header: hamburger only --- */
+
 @media (max-width: 1100px) {
   .mobile-header {
     justify-content: flex-start !important;
@@ -6017,7 +6047,7 @@ body .main-content {
   }
 }
 
-/* --- Exam header bar compact on mobile --- */
+
 @media (max-width: 900px) {
   .exam-header-bar {
     display: grid !important;
@@ -6076,7 +6106,7 @@ body .main-content {
   }
 }
 
-/* --- Exam history on exam cards --- */
+
 .exam-history {
   border-top: 1px solid var(--border-color);
   padding-top: 10px;
@@ -6134,9 +6164,7 @@ body .main-content {
 .exam-detail-type { font-size: 12px; color: var(--text-muted); }
 .exam-detail-score { font-size: 13px; font-weight: 600; color: var(--text-primary); }
 
-/* ============================================================
-   REMOVE TAP HIGHLIGHT & BUTTON FLASH
-   ============================================================ */
+
 * {
   -webkit-tap-highlight-color: transparent;
 }
@@ -6174,8 +6202,35 @@ body .main-content {
     z-index: 1200 !important;
   }
 
-  /* Push main content down so it starts below the fixed header */
+  
   .main-content {
     padding-top: 60px !important;
   }
 }
+
+
+.unit-completed-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background-color: var(--success-bg);
+  color: var(--success-color);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  letter-spacing: 0.03em;
+  line-height: 1;
+}
+
+[data-theme="light"] .unit-completed-badge {
+  background-color: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.notes-item-btn.completed:hover:not(.active) .unit-completed-badge {
+  background-color: rgba(16, 185, 129, 0.18);
+}
+

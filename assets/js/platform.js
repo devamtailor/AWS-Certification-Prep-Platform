@@ -1,6 +1,3 @@
-// AWS Certified Cloud Practitioner Platform Logic
-
-// ==================== CONFIGURATION & METADATA ====================
 const NOTES_LIST = [
   { id: 'cloud_computing', title: 'Cloud Computing' },
   { id: 'iam', title: 'IAM: Identity Access & Management' },
@@ -25,20 +22,18 @@ const NOTES_LIST = [
 
 const EXAMS_COUNT = 23;
 
-// ==================== APPLICATION STATE ====================
 const state = {
   activeView: 'dashboard',
-  notesProgress: {}, // e.g. { cloud_computing: true }
-  examAttempts: [],  // e.g. [{ id, examId, score, correct, total, date, timeSpent, passed }]
+  notesProgress: {}, // maps module IDs to true/false
+  examAttempts: [],  // list of completed exam scorecards
   
-  // Active Exam state
   activeExam: {
     id: null,
-    mode: 'study', // 'study' or 'exam'
+    mode: 'study', // study (feedback) or exam (timer)
     questions: [],
-    userAnswers: {}, // index -> Array of chosen letters (e.g. ['A', 'C'])
+    userAnswers: {}, // question index to chosen options
     flagged: new Set(),
-    timeRemaining: 90 * 60, // 90 minutes in seconds
+    timeRemaining: 90 * 60, // 90 mins limit
     timeSpent: 0,
     timerInterval: null,
     currentIndex: 0,
@@ -46,7 +41,6 @@ const state = {
   }
 };
 
-// Safe icon loader
 function createIconsSafe() {
   if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') {
     lucide.createIcons();
@@ -55,7 +49,6 @@ function createIconsSafe() {
   }
 }
 
-// ==================== INITIALIZATION ====================
 document.addEventListener('DOMContentLoaded', () => {
   loadProgressFromStorage();
   initRouting();
@@ -66,7 +59,6 @@ document.addEventListener('DOMContentLoaded', () => {
   createIconsSafe();
 });
 
-// Load progress from LocalStorage
 function loadProgressFromStorage() {
   const savedNotes = localStorage.getItem('aws_prep_notes_progress');
   if (savedNotes) {
@@ -79,7 +71,6 @@ function loadProgressFromStorage() {
   }
 }
 
-// Save progress to LocalStorage
 function saveProgressToStorage() {
   localStorage.setItem('aws_prep_notes_progress', JSON.stringify(state.notesProgress));
 }
@@ -88,7 +79,6 @@ function saveAttemptsToStorage() {
   localStorage.setItem('aws_prep_exam_attempts', JSON.stringify(state.examAttempts));
 }
 
-// ==================== THEME CONTROLLER ====================
 function initTheme() {
   const currentTheme = localStorage.getItem('aws_prep_theme') || 'dark';
   document.documentElement.setAttribute('data-theme', currentTheme);
@@ -102,7 +92,6 @@ function toggleTheme() {
   localStorage.setItem('aws_prep_theme', newTheme);
   updateThemeUI(newTheme);
   
-  // Refresh mind map if visible
   if (state.activeView === 'mindmap') {
     setupMindmapView();
   }
@@ -115,10 +104,9 @@ function updateThemeUI(theme) {
   }
 }
 
-// ==================== APP ROUTER ====================
 function initRouting() {
   window.addEventListener('hashchange', handleRouteChange);
-  handleRouteChange(); // Trigger initial routing
+  handleRouteChange();
 }
 
 function handleRouteChange() {
@@ -134,7 +122,6 @@ function handleRouteChange() {
     });
   }
   
-  // Set active link in sidebar
   const viewName = route.replace('#', '');
   state.activeView = viewName;
   
@@ -146,7 +133,6 @@ function handleRouteChange() {
     }
   });
   
-  // Switch Views
   document.querySelectorAll('.view-section').forEach(section => {
     section.classList.remove('active');
   });
@@ -156,17 +142,19 @@ function handleRouteChange() {
     activeSection.classList.add('active');
   }
   
-  // Reset mobile sidebar
   const sidebar = document.getElementById('sidebar');
   if (sidebar) sidebar.classList.remove('mobile-open');
   
-  // View specific setups
   if (viewName === 'dashboard') {
     renderDashboard();
   } else if (viewName === 'notes') {
     setupNotesView(params.id);
   } else if (viewName === 'exams') {
-    setupExamsView(params.id);
+    if (params.attempt) {
+      viewPastResult(parseInt(params.attempt));
+    } else {
+      setupExamsView(params.id);
+    }
   } else if (viewName === 'syllabus') {
     setupSyllabusView();
   } else if (viewName === 'mindmap') {
@@ -177,27 +165,19 @@ function handleRouteChange() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ==================== EVENT LISTENERS ====================
 function initEventListeners() {
-  // Theme toggle
   const themeBtn = document.getElementById('theme-toggle-btn');
   if (themeBtn) {
     themeBtn.addEventListener('click', toggleTheme);
   }
 
-  // Sidebar collapse toggle (desktop)
   const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
   const sidebar = document.getElementById('sidebar');
   const chevronIcon = sidebarToggleBtn ? sidebarToggleBtn.querySelector('i') : null;
 
   function updateNavBarOffset() {
-    // On mobile (≤900px) the nav bars are hidden, no offset needed
-    if (window.innerWidth <= 900) {
-      document.documentElement.style.setProperty('--sidebar-w', '0px');
-      return;
-    }
-    // On tablet where sidebar is a drawer overlay (≤1100px), also 0
-    if (window.innerWidth <= 1100) {
+    // Hide sidebars on smaller breakpoints
+    if (window.innerWidth <= 900 || window.innerWidth <= 1100) {
       document.documentElement.style.setProperty('--sidebar-w', '0px');
       return;
     }
@@ -205,12 +185,10 @@ function initEventListeners() {
     document.documentElement.style.setProperty('--sidebar-w', collapsed ? '64px' : '260px');
   }
 
-  // Set on load
   updateNavBarOffset();
   window.addEventListener('resize', updateNavBarOffset);
 
   if (sidebarToggleBtn && sidebar) {
-    // Restore persisted collapse state
     if (localStorage.getItem('aws_prep_sidebar_collapsed') === 'true') {
       sidebar.classList.add('collapsed');
       if (chevronIcon) chevronIcon.setAttribute('data-lucide', 'chevron-right');
@@ -226,7 +204,6 @@ function initEventListeners() {
     });
   }
   
-  // Reset Progress Modal Trigger
   const resetBtn = document.getElementById('reset-progress-btn');
   if (resetBtn) {
     resetBtn.addEventListener('click', () => {
@@ -251,7 +228,6 @@ function initEventListeners() {
     });
   }
   
-  // Mobile menu buttons
   const mobileMenuBtn = document.getElementById('mobile-menu-btn');
   if (mobileMenuBtn) {
     mobileMenuBtn.addEventListener('click', () => {
@@ -266,7 +242,7 @@ function initEventListeners() {
     });
   }
 
-  // ---- Slide-up Drawer System (Notes/Exam mobile panels) ----
+  // Slide-up drawer menus on touch devices
   let activeDrawer = null;
 
   function openDrawer(panelEl) {
@@ -288,20 +264,15 @@ function initEventListeners() {
     document.body.classList.remove('drawer-is-open');
   }
 
-  // Close drawer when tapping outside it (document-level, not via backdrop overlay)
   document.addEventListener('click', (e) => {
     if (!activeDrawer) return;
-    // If tap is inside the drawer or on any toggle button, ignore
     if (activeDrawer.contains(e.target)) return;
     if (e.target.closest('#mobile-toggle-exam-nav') ||
         e.target.closest('#mobile-toggle-results-nav') ||
         e.target.closest('#mobile-toggle-notes-sidebar') ||
         e.target.closest('#mobile-toggle-notes-toc')) return;
     closeDrawer();
-  }); // capture: false (default) — fires AFTER target element handlers
-
-  // Remove the old backdrop click handler — backdrop has pointer-events:none now
-  // (no drawerBackdrop.addEventListener needed)
+  });
 
   const mobileToggleNotesSidebar = document.getElementById('mobile-toggle-notes-sidebar');
   if (mobileToggleNotesSidebar) {
@@ -335,7 +306,7 @@ function initEventListeners() {
     });
   }
 
-  // Close drawer automatically after tapping a question bubble, notes item, or TOC link
+  // Close mobile drawer on item selection
   document.addEventListener('click', (e) => {
     if (!activeDrawer) return;
     if (e.target.closest('.q-nav-bubble') ||
@@ -347,7 +318,6 @@ function initEventListeners() {
     }
   });
 
-  // Note Search input
   const searchInput = document.getElementById('notes-search-input');
   if (searchInput) {
     searchInput.addEventListener('input', (e) => {
@@ -366,25 +336,23 @@ function initEventListeners() {
     });
   }
   
-  // Mark note completed checkbox — get active note ID from URL, not DOM query
+  // Track study completion of individual units
   const compCheckbox = document.getElementById('note-completed-checkbox');
   if (compCheckbox) {
     compCheckbox.addEventListener('change', (e) => {
-      // Get the active note ID reliably from the current hash
       const hash = window.location.hash || '';
       const parts = hash.split('?id=');
       const activeId = parts[1] ? decodeURIComponent(parts[1]) : null;
 
-      if (activeId) {
+      const isValidNote = NOTES_LIST.some(n => n.id === activeId);
+      if (activeId && isValidNote) {
         if (e.target.checked) {
           state.notesProgress[activeId] = true;
         } else {
-          // Explicitly delete so unmarking is clean
           delete state.notesProgress[activeId];
         }
         saveProgressToStorage();
         renderNotesMenu();
-        // Also re-render dashboard domain mastery + progress
         renderDomainMastery();
         const totalNotes = NOTES_LIST.length;
         const completedNotes = Object.values(state.notesProgress).filter(Boolean).length;
@@ -399,7 +367,7 @@ function initEventListeners() {
     });
   }
   
-  // Intercept click on note inline links to prevent hashchange routing issues
+  // Prevent default routing when clicking anchors in notes body
   const notesContainer = document.getElementById('notes-content-placeholder');
   if (notesContainer) {
     notesContainer.addEventListener('click', (e) => {
@@ -409,13 +377,11 @@ function initEventListeners() {
         if (href && href.startsWith('#')) {
           e.preventDefault();
           const targetId = href.substring(1);
-          // Try finding direct element or lowercased decodes
           let targetEl = document.getElementById(targetId) || 
                          document.getElementById(decodeURIComponent(targetId)) ||
                          document.getElementById(targetId.toLowerCase());
                          
           if (!targetEl) {
-            // Find by heading content
             const headings = notesContainer.querySelectorAll('h1, h2, h3, h4');
             for (const h of headings) {
               const hId = h.innerText.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
@@ -435,7 +401,7 @@ function initEventListeners() {
     });
   }
 
-  // Intercept click on note TOC links
+  // Handle TOC layout target scrolling
   const tocLinks = document.getElementById('notes-toc-links');
   if (tocLinks) {
     tocLinks.addEventListener('click', (e) => {
@@ -454,11 +420,8 @@ function initEventListeners() {
     });
   }
 
-  // Note: results-back-exams-btn is bound inside renderExamResults to avoid stale refs
-
-  // Keyboard navigation for active exams & results review via left/right arrows
+  // Bind key events for exam review and navigation
   document.addEventListener('keydown', (e) => {
-    // Avoid interfering with inputs if user is typing
     if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) {
       return;
     }
@@ -491,9 +454,7 @@ function initEventListeners() {
   });
 }
 
-// ==================== DASHBOARD VIEW CONTROLLER ====================
 function renderDashboard() {
-  // Update stats
   const totalNotes = NOTES_LIST.length;
   const completedNotes = Object.values(state.notesProgress).filter(Boolean).length;
   const progressPercent = totalNotes > 0 ? Math.round((completedNotes / totalNotes) * 100) : 0;
@@ -517,7 +478,7 @@ function renderDashboard() {
   }
   document.getElementById('stats-average-score').innerText = `${avgScore}%`;
   
-  // Exam readiness calculation (optional element - guarded)
+  // Calculate exam readiness state
   const readinessEl = document.getElementById('stats-readiness');
   if (readinessEl) {
     let readiness = 'Not Ready';
@@ -544,7 +505,6 @@ function renderDashboard() {
     if (readinessSubEl) readinessSubEl.innerText = subText;
   }
   
-  // Continue learning card
   const nextNote = NOTES_LIST.find(note => !state.notesProgress[note.id]);
   const contCard = document.getElementById('continue-card');
   if (nextNote) {
@@ -560,7 +520,6 @@ function renderDashboard() {
     document.getElementById('continue-description').innerText = 'Awesome job! Put your skills to the test.';
   }
   
-  // Attempts list table
   const tbody = document.getElementById('recent-attempts-list');
   if (examsCompleted === 0) {
     tbody.innerHTML = `<tr><td colspan="4" class="empty-state">No exam attempts yet. Choose an exam from the Test Center to begin!</td></tr>`;
@@ -570,7 +529,7 @@ function renderDashboard() {
       const statusClass = isStudy ? 'study-badge' : (att.passed ? 'pass' : 'fail');
       const statusText = isStudy ? 'Study' : (att.passed ? 'Pass' : 'Fail');
       return `
-        <tr>
+        <tr class="clickable-row" onclick="window.location.hash='#exams?attempt=${att.id}'" title="Click to view exam results summary" style="cursor: pointer;">
           <td><strong>Practice Exam ${att.examId}</strong></td>
           <td>${new Date(att.date).toLocaleDateString()}</td>
           <td>${att.score}% (${att.correct}/${att.total})</td>
@@ -580,12 +539,10 @@ function renderDashboard() {
     }).join('');
   }
 
-  // Render domain mastery based on real progress
   renderDomainMastery();
 }
 
-// ==================== DOMAIN MASTERY ====================
-// CCP domains mapped to note IDs
+// Maps CLF-C02 syllabus domains to modules
 const DOMAIN_MAP = [
   {
     name: 'Cloud Concepts',
@@ -615,12 +572,11 @@ function renderDomainMastery() {
   const container = document.getElementById('domain-mastery-list');
   if (!container) return;
 
-  // Domain fill colours mapped to domain index
   const fillColors = [
-    'var(--accent-color)',   // D1: orange
-    '#f87171',               // D2: red
-    '#60a5fa',               // D3: blue
-    'var(--success-color)'  // D4: green
+    'var(--accent-color)',
+    '#f87171',
+    '#60a5fa',
+    'var(--success-color)'
   ];
 
   container.innerHTML = DOMAIN_MAP.map((domain, i) => {
@@ -639,7 +595,6 @@ function renderDomainMastery() {
   }).join('');
 }
 
-// ==================== STUDY NOTES VIEW CONTROLLER ====================
 function renderNotesMenu() {
   const menuContainer = document.getElementById('notes-menu-list');
   if (!menuContainer) return;
@@ -647,11 +602,11 @@ function renderNotesMenu() {
   menuContainer.innerHTML = NOTES_LIST.map((note, index) => {
     const isCompleted = !!state.notesProgress[note.id];
     const completedBadge = isCompleted
-      ? `<span class="unit-completed-badge">Done</span>`
+      ? `<span class="unit-completed-badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: -1px; margin-right: 2px;"><polyline points="20 6 9 17 4 12"></polyline></svg>Done</span>`
       : '';
     return `
       <button class="notes-item-btn${isCompleted ? ' completed' : ''}" data-id="${note.id}" onclick="window.location.hash='#notes?id=${note.id}'">
-        <div style="display: flex; width: 100%; align-items: center;">
+        <div style="display: flex; width: 100%; align-items: center; justify-content: space-between;">
           <span class="unit-number">Unit ${index + 1}</span>
           ${completedBadge}
         </div>
@@ -665,7 +620,6 @@ function setupNotesView(id) {
   renderNotesMenu();
   
   if (!id) {
-    // Show placeholder empty state
     document.getElementById('notes-content-placeholder').innerHTML = `
       <div class="empty-notes-state">
         <i data-lucide="book-open"></i>
@@ -722,7 +676,6 @@ function setupNotesView(id) {
     return lines.join('\n');
   }
   
-  // Highlight active note button
   document.querySelectorAll('.notes-item-btn').forEach(btn => {
     if (btn.getAttribute('data-id') === id) {
       btn.classList.add('active');
@@ -731,12 +684,11 @@ function setupNotesView(id) {
     }
   });
   
-  // Set checkbox state
   const compCheckbox = document.getElementById('note-completed-checkbox');
   compCheckbox.disabled = false;
   compCheckbox.checked = !!state.notesProgress[id];
   
-  // If the page is loaded directly from the file system, markdown fetches may fail.
+  // Warn if page is loaded locally via file:// protocol
   if (window.location.protocol === 'file:') {
     document.getElementById('notes-content-placeholder').innerHTML = `
       <div class="empty-notes-state">
@@ -749,7 +701,6 @@ function setupNotesView(id) {
     return;
   }
   
-  // Fetch note
   const matchedNote = NOTES_LIST.find(n => n.id === id);
   if (matchedNote) {
     document.getElementById('active-note-breadcrumb').innerText = matchedNote.title;
@@ -763,21 +714,21 @@ function setupNotesView(id) {
       return res.text();
     })
     .then(text => {
-      // Clean up YAML frontmatter if exists
       let cleanMd = text.replace(/^---[\s\S]*?---/, '');
       
-      // Rewrite image pathways (from ../images/ to images/)
+      // Localize image paths
       cleanMd = cleanMd.replace(/\.\.\/images\//g, 'images/');
       
-      // Remove duplicate TOC links block from the beginning
       const strippedMd = stripTopTOCLinks(cleanMd);
       
-      // Parse markdown to HTML
-      const html = typeof marked.parse === 'function' ? marked.parse(strippedMd) : marked(strippedMd);
+      let html = typeof marked.parse === 'function' ? marked.parse(strippedMd) : marked(strippedMd);
+      
+      // Wrap tables in nested wrappers to support mobile scroll & rounded corners clipping
+      html = html.replace(/<table/g, '<div class="table-container-outer"><div class="responsive-table-wrapper"><table');
+      html = html.replace(/<\/table>/g, '</table></div></div>');
       
       document.getElementById('notes-content-placeholder').innerHTML = html;
       
-      // Generate Table of Contents (TOC)
       buildTOC();
     })
     .catch(err => {
@@ -803,13 +754,12 @@ function buildTOC() {
     return;
   }
   
-  // Ensure all headings have appropriate scrollable IDs (including h1/h4)
+  // Assign search-friendly IDs to headings
   headings.forEach((heading) => {
     const id = heading.innerText.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
     heading.id = id;
   });
   
-  // Build links focusing on h2, h3, h4 (exclude h1 pages titles)
   let tocHTML = '';
   const tocHeadings = container.querySelectorAll('h2, h3, h4');
   tocHeadings.forEach((heading) => {
@@ -822,7 +772,6 @@ function buildTOC() {
   tocContainer.innerHTML = tocHTML || '<span style="color: var(--text-muted); font-size: 13px;">No headings</span>';
 }
 
-// ==================== PRACTICE EXAMS VIEW CONTROLLER ====================
 function setupExamsView(id) {
   if (id) {
     return;
@@ -849,7 +798,6 @@ function setupExamsView(id) {
       statusText = hasPassed ? 'Passed' : 'Failed';
       bestScoreText = `Best: ${highestScore}% &bull; ${attempts.length} attempt${attempts.length > 1 ? 's' : ''}`;
 
-      // Build history rows — last 3 attempts, newest first
       const recent = attempts.slice().reverse().slice(0, 3);
       historyHTML = `
         <div class="exam-history">
@@ -894,17 +842,15 @@ function setupExamsView(id) {
   createIconsSafe();
 }
 
-// View a past attempt's result without re-running the exam
+// Load past results from local scorecard
 window.viewPastResult = function(attemptId) {
   const attempt = state.examAttempts.find(a => a.id === attemptId);
   if (!attempt) return;
 
-  // We need the questions to render the review — fetch and parse them
   document.getElementById('exams-list-container').style.display = 'none';
   document.getElementById('active-exam-container').style.display = 'none';
   document.getElementById('exam-results-container').style.display = 'none';
 
-  // Show a loading state in results container
   const resContainer = document.getElementById('exam-results-container');
   resContainer.style.display = 'block';
   const body = document.getElementById('results-active-question-details');
@@ -914,13 +860,12 @@ window.viewPastResult = function(attemptId) {
     .then(res => { if (!res.ok) throw new Error(); return res.text(); })
     .then(text => {
       const questions = parseExamMarkdown(text);
-      // Reconstruct a minimal activeExam state so showReviewQuestion works
-      // We only have the final score, not per-question answers — show correct answers only
+      // Rebuild dummy activeExam data block for results navigation renderer
       state.activeExam = {
         id: attempt.examId,
         mode: attempt.mode,
         questions: questions,
-        userAnswers: {},   // no per-question data saved — show answer key view
+        userAnswers: {},
         flagged: new Set(),
         timeRemaining: 0,
         timeSpent: attempt.timeSpent,
@@ -935,9 +880,7 @@ window.viewPastResult = function(attemptId) {
     });
 };
 
-// Entry Point to Load and Start an Exam
 window.startExamFlow = function(examId, mode) {
-  // Clear any existing active exam state
   if (state.activeExam.timerInterval) {
     clearInterval(state.activeExam.timerInterval);
   }
@@ -953,10 +896,8 @@ window.startExamFlow = function(examId, mode) {
   modeBadge.style.backgroundColor = mode === 'study' ? 'var(--accent-glow)' : 'var(--primary-blue-glow)';
   modeBadge.style.color = mode === 'study' ? 'var(--accent-color)' : 'var(--primary-blue)';
   
-  // Pause button display
   document.getElementById('exam-pause-btn').style.display = mode === 'study' ? 'none' : 'block';
   
-  // Show Loading State
   document.getElementById('current-question-text').innerHTML = 'Parsing practice exam questions. Please wait...';
   document.getElementById('current-options-list').innerHTML = '';
   document.getElementById('question-nav-grid').innerHTML = '';
@@ -977,20 +918,18 @@ window.startExamFlow = function(examId, mode) {
       return res.text();
     })
     .then(text => {
-      // Parse Questions
       const questions = parseExamMarkdown(text);
       if (questions.length === 0) {
         throw new Error('No questions successfully parsed');
       }
       
-      // Setup Active Exam state
       state.activeExam = {
         id: examId,
         mode: mode,
         questions: questions,
         userAnswers: {},
         flagged: new Set(),
-        timeRemaining: 90 * 60, // 90 mins
+        timeRemaining: 90 * 60,
         timeSpent: 0,
         timerInterval: null,
         currentIndex: 0,
@@ -1011,13 +950,10 @@ window.startExamFlow = function(examId, mode) {
     });
 };
 
-// ==================== QUIZ ENGINE: MARKDOWN PARSER ====================
 function parseExamMarkdown(text) {
-  // Strip frontmatter
   let cleanText = text.replace(/^---[\s\S]*?---/, '');
   
-  // Parse into question blocks.
-  // Questions start with a number followed by a dot, e.g. "1." or "25." at start of a line
+  // Split file contents into individual question blocks starting with a number and period
   const lines = cleanText.split('\n');
   const questionBlocks = [];
   let currentBlock = null;
@@ -1025,7 +961,6 @@ function parseExamMarkdown(text) {
   lines.forEach(line => {
     const qMatch = line.match(/^\s*(\d+)\.\s*(.*)/);
     if (qMatch) {
-      // Start of a new question
       if (currentBlock) {
         questionBlocks.push(currentBlock);
       }
@@ -1044,7 +979,6 @@ function parseExamMarkdown(text) {
     questionBlocks.push(currentBlock);
   }
   
-  // Process each block to extract question content, choices, answer, explanation
   const parsedQuestions = questionBlocks.map((block, idx) => {
     let questionTextLines = [];
     let insideDetails = false;
@@ -1052,7 +986,6 @@ function parseExamMarkdown(text) {
     block.rawLines.forEach(line => {
       const trimmed = line.trim();
       
-      // Check details blocks
       if (trimmed.includes('<details')) {
         insideDetails = true;
         block.detailsRaw.push(line);
@@ -1062,39 +995,29 @@ function parseExamMarkdown(text) {
       } else if (insideDetails) {
         block.detailsRaw.push(line);
       } else if (trimmed.startsWith('-') || trimmed.startsWith('*')) {
-        // Option item
         block.optionsRaw.push(line);
       } else {
-        // Regular question text
         questionTextLines.push(line);
       }
     });
     
     const questionText = questionTextLines.join(' ').trim();
-    
-    // Parse Options
     const options = {};
     block.optionsRaw.forEach(optLine => {
-      // match options like "- A. Text" or " - B. Text"
       const optMatch = optLine.match(/^\s*[-\*]\s*([A-Z])\.\s*(.*)/);
       if (optMatch) {
         options[optMatch[1]] = optMatch[2].trim();
       }
     });
     
-    // Parse Answers & Explanations from Details block
     const detailsContent = block.detailsRaw.join('\n');
-    
-    // Parse Answer key
     let correctAnswers = [];
     const ansMatch = detailsContent.match(/Correct\s+Answer:\s*([A-Z,\s]+)/i) || 
                      detailsContent.match(/Correct\s+answer:\s*([A-Z,\s]+)/i);
     if (ansMatch) {
-      // Find all matches of capital letters (e.g. "D", "AC", "A, E")
       correctAnswers = ansMatch[1].match(/[A-Z]/g) || [];
     }
     
-    // Parse Explanation
     let explanation = '';
     const expMatch = detailsContent.match(/Explanation:\s*([\s\S]*?)(?=<\/details>|$)/i);
     if (expMatch) {
@@ -1114,17 +1037,14 @@ function parseExamMarkdown(text) {
   return parsedQuestions;
 }
 
-// ==================== ACTIVE QUIZ CONTROLLER ====================
 function initActiveExamUI() {
   const ae = state.activeExam;
   
-  // Render navigator grid
   const navGrid = document.getElementById('question-nav-grid');
   navGrid.innerHTML = ae.questions.map((q, idx) => {
     return `<button class="q-nav-bubble" id="q-nav-bubble-${idx}" onclick="jumpToQuestion(${idx})">${q.num}</button>`;
   }).join('');
   
-  // Start Timer
   if (ae.mode === 'exam') {
     document.getElementById('exam-timer').style.display = 'block';
     startTimer();
@@ -1132,17 +1052,14 @@ function initActiveExamUI() {
     document.getElementById('exam-timer').style.display = 'none';
   }
   
-  // Show first question
   ae.currentIndex = 0;
   showQuestion(0);
   
-  // Bind actions — desktop buttons
   document.getElementById('quiz-prev-btn').onclick = prevQuestion;
   document.getElementById('quiz-next-btn').onclick = nextQuestion;
   document.getElementById('quiz-check-btn').onclick = checkQuestionAnswer;
   document.getElementById('flag-question-btn').onclick = toggleFlag;
 
-  // Bind mobile Prev/Next buttons
   const mobPrev = document.getElementById('quiz-prev-btn-mobile');
   const mobNext = document.getElementById('quiz-next-btn-mobile');
   if (mobPrev) mobPrev.onclick = prevQuestion;
@@ -1161,7 +1078,6 @@ function startTimer() {
   const ae = state.activeExam;
   const display = document.getElementById('exam-timer');
   
-  // Clear any existing
   if (ae.timerInterval) clearInterval(ae.timerInterval);
   
   ae.timerInterval = setInterval(() => {
@@ -1170,7 +1086,6 @@ function startTimer() {
     ae.timeRemaining--;
     ae.timeSpent++;
     
-    // Format minutes/seconds
     const mins = Math.floor(ae.timeRemaining / 60);
     const secs = ae.timeRemaining % 60;
     display.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
@@ -1182,7 +1097,6 @@ function startTimer() {
     }
   }, 1000);
   
-  // Setup toggle pause listener
   const pauseBtn = document.getElementById('exam-pause-btn');
   pauseBtn.onclick = () => {
     ae.isPaused = !ae.isPaused;
@@ -1204,10 +1118,8 @@ function showQuestion(index) {
   
   const q = ae.questions[index];
   
-  // Update indicators
   document.getElementById('current-question-num').innerText = `Question ${q.num} of ${ae.questions.length}`;
   
-  // Update Flag icon button state
   const flagBtn = document.getElementById('flag-question-btn');
   if (ae.flagged.has(index)) {
     flagBtn.classList.add('active');
@@ -1215,18 +1127,15 @@ function showQuestion(index) {
     flagBtn.classList.remove('active');
   }
   
-  // Update navigator bubbles
   document.querySelectorAll('.q-nav-bubble').forEach(btn => btn.classList.remove('active'));
   const activeBubble = document.getElementById(`q-nav-bubble-${index}`);
   if (activeBubble) activeBubble.classList.add('active');
   
-  // Render question text
   document.getElementById('current-question-text').innerHTML = q.questionText;
   
-  // Is multi-choice (Choose TWO, Select TWO)?
+  // Check if question asks for multiple choices
   const isMultiChoice = q.questionText.toLowerCase().includes('two') || q.correctAnswers.length > 1;
   
-  // Render options list
   const optionsList = document.getElementById('current-options-list');
   optionsList.innerHTML = Object.entries(q.options).map(([letter, text]) => {
     const isSelected = (ae.userAnswers[index] || []).includes(letter);
@@ -1239,10 +1148,8 @@ function showQuestion(index) {
     `;
   }).join('');
   
-  // Hide explanation block
   document.getElementById('practice-explanation').style.display = 'none';
   
-  // Enable/Disable navigation buttons — desktop + mobile in sync
   const isFirst = index === 0;
   const isLast = index === ae.questions.length - 1;
 
@@ -1260,11 +1167,9 @@ function showQuestion(index) {
     if (mobNext) { mobNext.disabled = false; mobNext.style.opacity = ''; }
   }
   
-  // Configure Practice Mode check button
   const checkBtn = document.getElementById('quiz-check-btn');
   if (ae.mode === 'study') {
     checkBtn.style.display = 'inline-flex';
-    // If already checked or answered, we can show status immediately
   } else {
     checkBtn.style.display = 'none';
   }
@@ -1304,11 +1209,9 @@ window.selectOption = function(letter, isMultiChoice) {
       ae.userAnswers[index].push(letter);
     }
   } else {
-    // Single choice
     ae.userAnswers[index] = [letter];
   }
   
-  // Re-render choices selection states
   document.querySelectorAll('.option-choice-wrapper').forEach(wrapper => {
     const l = wrapper.getAttribute('data-letter');
     if (ae.userAnswers[index].includes(l)) {
@@ -1318,7 +1221,6 @@ window.selectOption = function(letter, isMultiChoice) {
     }
   });
   
-  // Update navigator status
   const bubble = document.getElementById(`q-nav-bubble-${index}`);
   if (ae.userAnswers[index].length > 0) {
     bubble.classList.add('answered');
@@ -1355,11 +1257,9 @@ function checkQuestionAnswer() {
     return;
   }
   
-  // Grade correctness
   const isCorrect = userAnswers.length === q.correctAnswers.length &&
                     q.correctAnswers.every(ans => userAnswers.includes(ans));
   
-  // Update choice containers
   document.querySelectorAll('.option-choice-wrapper').forEach(wrapper => {
     const l = wrapper.getAttribute('data-letter');
     const isChosen = userAnswers.includes(l);
@@ -1373,7 +1273,6 @@ function checkQuestionAnswer() {
     }
   });
   
-  // Show explanation block
   const expBlock = document.getElementById('practice-explanation');
   const statusEl = document.getElementById('explanation-status');
   const textEl = document.getElementById('explanation-text-content');
@@ -1389,7 +1288,6 @@ function checkQuestionAnswer() {
   expBlock.style.display = 'block';
 }
 
-// ==================== QUIZ ENGINE: SUBMISSION & GRADING ====================
 function openSubmitConfirmModal() {
   const ae = state.activeExam;
   const modal = document.getElementById('submit-modal');
@@ -1402,7 +1300,6 @@ function openSubmitConfirmModal() {
   
   modal.style.display = 'flex';
   
-  // Modal buttons
   document.getElementById('modal-cancel-btn').onclick = () => {
     modal.style.display = 'none';
   };
@@ -1415,10 +1312,8 @@ function openSubmitConfirmModal() {
 function submitActiveExam() {
   const ae = state.activeExam;
   
-  // Stop Timer
   if (ae.timerInterval) clearInterval(ae.timerInterval);
   
-  // Grade the quiz
   let correctCount = 0;
   ae.questions.forEach((q, idx) => {
     const userAns = ae.userAnswers[idx] || [];
@@ -1429,9 +1324,8 @@ function submitActiveExam() {
   
   const total = ae.questions.length;
   const percentage = total > 0 ? Math.round((correctCount / total) * 100) : 0;
-  const passed = percentage >= 70; // 70% passing threshold
+  const passed = percentage >= 70;
   
-  // Save attempt to state & storage
   const attempt = {
     id: Date.now(),
     examId: ae.id,
@@ -1447,7 +1341,6 @@ function submitActiveExam() {
   state.examAttempts.push(attempt);
   saveAttemptsToStorage();
   
-  // Render results view
   renderExamResults(attempt);
 }
 
@@ -1461,14 +1354,12 @@ function renderExamResults(attempt) {
   const isStudy = attempt.mode === 'study';
   const ae = state.activeExam;
 
-  // Title & date
   document.getElementById('results-exam-name').innerText = isStudy
     ? `Practice Exam ${attempt.examId} — Study Summary`
     : `Practice Exam ${attempt.examId} — Exam Results`;
   document.getElementById('results-date-string').innerText =
     `Completed on ${new Date(attempt.date).toLocaleString()}`;
 
-  // Score ring
   const pct = attempt.score;
   const pctEl = document.getElementById('results-score-percent');
   const verdictEl = document.getElementById('results-pass-fail');
@@ -1491,13 +1382,12 @@ function renderExamResults(attempt) {
     }
   }
 
-  // Animate ring fill (314 = 2πr)
+  // Animate radial progress border
   if (ringFill) {
     const offset = 314 - (314 * pct) / 100;
     setTimeout(() => { ringFill.style.strokeDashoffset = offset; }, 80);
   }
 
-  // Stats
   document.getElementById('results-correct-count').innerText = attempt.correct;
   document.getElementById('results-incorrect-count').innerText = attempt.total - attempt.correct;
   document.getElementById('results-total-count').innerText = attempt.total;
@@ -1505,13 +1395,11 @@ function renderExamResults(attempt) {
   const secs = attempt.timeSpent % 60;
   document.getElementById('results-time-spent').innerText = `${mins}m ${secs}s`;
 
-  // Retake button
   const retakeBtn = document.getElementById('results-retake-btn');
   if (retakeBtn) {
     retakeBtn.onclick = () => startExamFlow(attempt.examId, attempt.mode);
   }
 
-  // Back to exams button
   const backBtn = document.getElementById('results-back-exams-btn');
   if (backBtn) {
     backBtn.addEventListener('click', (e) => {
@@ -1521,7 +1409,7 @@ function renderExamResults(attempt) {
     });
   }
 
-  // Find first incorrect to show first
+  // Focus review on first incorrect response
   let firstShowIdx = 0;
   for (let i = 0; i < ae.questions.length; i++) {
     const userAns = ae.userAnswers[i] || [];
@@ -1531,11 +1419,9 @@ function renderExamResults(attempt) {
     if (!ok) { firstShowIdx = i; break; }
   }
 
-  // Populate nav grid
   populateResultsNavGrid('all');
   showReviewQuestion(firstShowIdx);
 
-  // Filter buttons
   const filters = document.querySelectorAll('.results-review-controls .filter-buttons button');
   filters.forEach(btn => {
     btn.onclick = (e) => {
@@ -1560,7 +1446,6 @@ function populateResultsNavGrid(filter) {
                       q.correctAnswers.every(ans => userAns.includes(ans));
     const isFlagged = ae.flagged.has(idx);
     
-    // Apply filters
     if (filter === 'incorrect' && isCorrect) return;
     if (filter === 'flagged' && !isFlagged) return;
     
@@ -1586,7 +1471,6 @@ window.showReviewQuestion = function(index) {
   const q = ae.questions[index];
   const userAns = ae.userAnswers[index] || [];
 
-  // Highlight bubble in nav grid
   document.querySelectorAll('.r-nav-bubble').forEach(b => b.classList.remove('active'));
   const bubble = document.getElementById(`r-nav-bubble-${index}`);
   if (bubble) {
@@ -1597,7 +1481,6 @@ window.showReviewQuestion = function(index) {
   const isCorrect = userAns.length === q.correctAnswers.length &&
                     q.correctAnswers.every(a => userAns.includes(a));
 
-  // Build options HTML
   const optsHTML = Object.entries(q.options).map(([letter, text]) => {
     const isChosen = userAns.includes(letter);
     const isAnswer = q.correctAnswers.includes(letter);
@@ -1618,7 +1501,6 @@ window.showReviewQuestion = function(index) {
       </div>`;
   }).join('');
 
-  // User's chosen answers text
   const chosenText = userAns.length > 0 ? userAns.join(', ') : '<em>No answer selected</em>';
 
   const detailPanel = document.getElementById('results-active-question-details');
@@ -1654,7 +1536,6 @@ window.showReviewQuestion = function(index) {
     </div>
   `;
 
-  // Nav bar (desktop)
   const navBar = document.getElementById('results-review-nav-buttons');
   const counter = document.getElementById('results-nav-counter');
   if (navBar) {
@@ -1670,7 +1551,6 @@ window.showReviewQuestion = function(index) {
       showReviewQuestion(i);
     };
 
-    // Previous
     [prevBtn, prevMob].forEach(btn => {
       if (!btn) return;
       if (index === 0) {
@@ -1681,7 +1561,6 @@ window.showReviewQuestion = function(index) {
       }
     });
 
-    // Next
     [nextBtn, nextMob].forEach(btn => {
       if (!btn) return;
       if (index === ae.questions.length - 1) {
@@ -1706,7 +1585,6 @@ function exitExamSession() {
   }
 }
 
-// ==================== SYLLABUS CONTROLLER ====================
 function setupSyllabusView() {
   const container = document.getElementById('syllabus-container');
   container.innerHTML = '<p class="empty-state">Loading syllabus domains...</p>';
@@ -1720,7 +1598,7 @@ function setupSyllabusView() {
       const domains = parseSyllabusMarkdown(text);
       
       container.innerHTML = domains.map((domain, idx) => {
-        const letter = String.fromCharCode(65 + idx); // A, B, C, D
+        const letter = String.fromCharCode(65 + idx);
         
         const subtopicsHTML = domain.subtopics.map(sub => {
           const listItems = sub.bullets.map(b => `<li>${b}</li>`).join('');
@@ -1758,18 +1636,16 @@ function setupSyllabusView() {
     });
 }
 
+// Parses exam domains from structured guide
 function parseSyllabusMarkdown(text) {
-  // Parses domains from study-guide.md
-  // Domains start with "## Domain X:"
   const domains = [];
   const sections = text.split(/\n##\s+Domain\s+\d+:\s*/);
   
-  // The first segment is intro header, slice it off
   sections.slice(1).forEach(sectionText => {
     const lines = sectionText.split('\n');
     const title = lines[0].trim();
     
-    // Deduce weight from domains list if we can, otherwise default
+    // Map domain weight based on title keyword
     let weight = '20-30%';
     if (title.toLowerCase().includes('concepts')) weight = '26% of Exam';
     if (title.toLowerCase().includes('security')) weight = '25% of Exam';
@@ -1818,8 +1694,6 @@ window.toggleDomainAccordion = function(index) {
   }
 };
 
-// ==================== MIND MAP CONTROLLER ====================
-// Structured topic tree per CCP domain — navigates to in-app study notes
 const MINDMAP_TREE = [
   {
     domain: 'Domain 1: Cloud Concepts',
@@ -1870,7 +1744,6 @@ function setupMindmapView() {
   const container = document.getElementById('mindmap-container');
   if (!container) return;
 
-  // Update header stat pills
   const totalUnits = NOTES_LIST.length;
   const doneUnits = Object.values(state.notesProgress).filter(Boolean).length;
   const pct = totalUnits > 0 ? Math.round((doneUnits / totalUnits) * 100) : 0;
@@ -1879,7 +1752,6 @@ function setupMindmapView() {
   if (countPill) countPill.innerHTML = `<strong>${doneUnits}</strong> Units Done`;
   if (pctPill) pctPill.textContent = `${pct}% Complete`;
 
-  // Always rebuild to reflect latest progress
   const tree = document.createElement('div');
   tree.className = 'topic-tree';
 
@@ -1890,7 +1762,6 @@ function setupMindmapView() {
 
     const card = document.createElement('div');
     card.className = 'topic-domain-card';
-    // Open first domain by default
     if (di === 0) card.classList.add('open');
 
     const header = document.createElement('div');

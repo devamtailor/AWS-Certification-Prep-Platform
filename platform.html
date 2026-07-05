@@ -5,25 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AWS Cloud Practitioner Prep Hub</title>
   
-  <!-- Preconnect & Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <!-- Style Sheets -->
   <link rel="stylesheet" href="assets/css/platform.css">
   <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
   
-  <!-- CDNs for Icons & Markdown Parsing -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
 
-  <!-- App Container -->
   <div class="app-container">
     
-    <!-- Sidebar Navigation -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
         <div class="logo-container">
@@ -87,10 +82,8 @@
       </nav>
     </aside>
     
-    <!-- Main Content Area -->
     <div class="main-wrapper">
       
-      <!-- Top Mobile Header — shown only on mobile where sidebar is a drawer -->
       <header class="mobile-header" id="mobile-header">
         <button class="mobile-menu-btn" id="mobile-menu-btn">
           <i data-lucide="menu"></i>
@@ -99,15 +92,13 @@
           <i data-lucide="cloud-lightning" class="logo-icon"></i>
           <span>Cloud Control</span>
         </div>
-        <div style="width: 40px;"></div> <!-- Spacer -->
+        <div style="width: 40px;"></div>
       </header>
       
-      <!-- Main Scrollable Screen -->
       <main class="main-content">
         
-        <!-- ==================== DASHBOARD VIEW ==================== -->
+        <!-- Dashboard View Section -->
         <section id="dashboard-view" class="view-section active">
-          <!-- Hero Section: Editorial Typography & Massive Headline -->
           <div class="mission-hero-banner">
             <div class="hero-copy-block">
               <h1 class="editorial-headline">AWS CERTIFICATION PREPARATION PLATFORM</h1>
@@ -143,10 +134,8 @@
             </div>
           </div>
           
-          <!-- Redesigned Structured Dashboard Layout -->
           <div class="dashboard-content-layout">
             
-            <!-- Top Metric Stats Row -->
             <div class="dashboard-stats-row">
               <div class="dashboard-stat-card">
                 <div class="stat-card-header">
@@ -156,7 +145,7 @@
                 <div class="stat-card-body">
                   <span class="stat-card-value" id="stats-progress-percent">0%</span>
                   <div class="progress-bar-container">
-                    <div class="progress-bar-fill" id="bento-progress-fill" style="width: 0%;"></div>
+                     <div class="progress-bar-fill" id="bento-progress-fill" style="width: 0%;"></div>
                   </div>
                   <span class="progress-sub-text" id="stats-progress-count">0 of 19 units completed</span>
                 </div>
@@ -185,12 +174,9 @@
               </div>
             </div>
             
-            <!-- Main Content Two-Column Grid -->
             <div class="dashboard-columns-grid">
               
-              <!-- Left Column (Recommended Next Unit & Weakest Domain) -->
               <div class="dashboard-col">
-                <!-- Recommended Next Unit -->
                 <div class="dashboard-panel-card">
                   <div class="panel-card-header">
                     <span class="panel-label">RECOMMENDED NEXT UNIT</span>
@@ -206,7 +192,6 @@
                   </div>
                 </div>
                 
-                <!-- Weakest Domain -->
                 <div class="dashboard-panel-card">
                   <div class="panel-card-header">
                     <span class="panel-label">WEAKEST DOMAIN</span>
@@ -220,9 +205,7 @@
                 </div>
               </div>
               
-              <!-- Right Column (Exam Readiness & Domain Mastery) -->
               <div class="dashboard-col">
-                <!-- Exam Readiness -->
                 <div class="dashboard-panel-card">
                   <div class="panel-card-header">
                     <span class="panel-label">EXAM READINESS</span>
@@ -244,21 +227,18 @@
                   </div>
                 </div>
                 
-                <!-- Domain Mastery -->
                 <div class="dashboard-panel-card">
                   <div class="panel-card-header">
                     <span class="panel-label">DOMAIN MASTERY</span>
                     <i data-lucide="activity" class="panel-header-icon text-purple"></i>
                   </div>
                   <div class="domain-mastery-list" id="domain-mastery-list">
-                    <!-- JS populated -->
                   </div>
                 </div>
               </div>
               
             </div>
             
-            <!-- Bottom Full-Width Table Row -->
             <div class="dashboard-table-row">
               <div class="dashboard-panel-card">
                 <div class="panel-card-header">
@@ -288,21 +268,18 @@
           </div>
         </section>
         
-        <!-- ==================== STUDY NOTES VIEW ==================== -->
+        <!-- Study Notes View Section -->
         <section id="notes-view" class="view-section">
           <div class="notes-layout">
-            <!-- Sidebar for note selection -->
             <div class="notes-sidebar">
               <div class="notes-search-wrapper">
                 <i data-lucide="search"></i>
                 <input type="text" id="notes-search-input" placeholder="Search modules...">
               </div>
               <div class="notes-menu-list" id="notes-menu-list">
-                <!-- Javascript populated -->
               </div>
             </div>
             
-            <!-- Active note content container -->
             <div class="notes-body">
               <div class="notes-header-actions">
                 <div class="breadcrumbs">
@@ -330,15 +307,13 @@
               </div>
             </div>
             
-            <!-- Table of Contents Panel -->
             <div class="notes-toc-panel">
               <h3>On this page</h3>
               <div class="toc-links" id="notes-toc-links">
-                <!-- Javascript populated -->
               </div>
             </div>
           </div>
-          <!-- Mobile Notes Action Bar -->
+          
           <div class="mobile-notes-action-bar">
             <button class="btn btn-secondary" id="mobile-toggle-notes-sidebar">
               <i data-lucide="book-open"></i>
@@ -351,9 +326,8 @@
           </div>
         </section>
         
-        <!-- ==================== PRACTICE EXAMS VIEW ==================== -->
+        <!-- Practice Exams View Section -->
         <section id="exams-view" class="view-section">
-          <!-- Main Exams Listing -->
           <div id="exams-list-container">
             <div class="exams-welcome-header">
               <span class="page-header-eyebrow">CLF-C02 &bull; Practice Test Center</span>
@@ -366,14 +340,12 @@
               </div>
             </div>
             <div class="exams-grid" id="exams-grid">
-              <!-- Dynamically Populated -->
             </div>
           </div>
           
-          <!-- Active Exam Screen -->
+          <!-- Exam Interaction Screen -->
           <div id="active-exam-container" style="display: none;" class="active-exam-shell">
 
-            <!-- Top bar -->
             <div class="exam-header-bar">
               <div class="exam-header-meta">
                 <h2 id="active-exam-title">Practice Exam</h2>
@@ -391,7 +363,6 @@
               </div>
             </div>
 
-            <!-- Middle: sidebar + question (grows to fill) -->
             <div class="exam-layout">
               <div class="exam-sidebar-nav" id="exam-sidebar-nav">
                 <h3>Questions</h3>
@@ -422,7 +393,6 @@
               </div>
             </div>
 
-            <!-- Bottom nav row — plain flex row, NOT a floating box -->
             <div class="exam-nav-bar">
               <button class="btn btn-secondary" id="quiz-prev-btn">
                 <i data-lucide="chevron-left"></i> Prev
@@ -433,7 +403,6 @@
               </button>
             </div>
 
-            <!-- Mobile: Questions drawer toggle + Prev/Next always visible -->
             <div class="mobile-exam-action-bar">
               <button class="btn btn-secondary btn-mob-nav" id="quiz-prev-btn-mobile" disabled>
                 <i data-lucide="chevron-left"></i>
@@ -449,10 +418,9 @@
 
           </div>
           
-          <!-- Exam Results Screen -->
+          <!-- Exam Results and Review Screen -->
           <div id="exam-results-container" style="display: none;" class="results-shell">
 
-            <!-- Results Hero Header -->
             <div class="results-hero">
               <div class="results-hero-left">
                 <div class="score-ring-wrap">
@@ -500,10 +468,8 @@
               </div>
             </div>
 
-            <!-- Review Body -->
             <div class="results-body">
 
-              <!-- Left: Question Navigator (no scroll — wraps naturally) -->
               <div class="results-sidebar-nav" id="results-sidebar-nav">
                 <div class="results-review-controls">
                   <span class="results-nav-label">Review Navigation</span>
@@ -516,7 +482,6 @@
                 <div class="results-nav-grid" id="results-nav-grid"></div>
               </div>
 
-              <!-- Right: Question detail (scrolls independently) -->
               <div class="results-main-panel">
                 <div class="results-question-frame" id="results-active-question-details">
                   <p class="empty-state">Select a question to review.</p>
@@ -525,7 +490,6 @@
 
             </div>
 
-            <!-- Prev / Next — fixed bar OUTSIDE the scrolling area so it never moves -->
             <div class="results-nav-bar" id="results-review-nav-buttons" style="display:none;">
               <button class="btn btn-secondary" id="results-prev-btn">
                 <i data-lucide="arrow-left"></i> Prev
@@ -536,7 +500,6 @@
               </button>
             </div>
 
-            <!-- Mobile: drawer toggle + Prev/Next always visible -->
             <div class="mobile-exam-action-bar">
               <button class="btn btn-secondary btn-mob-nav" id="results-prev-btn-mobile" disabled>
                 <i data-lucide="arrow-left"></i>
@@ -551,9 +514,9 @@
             </div>
 
           </div>
-        </section> <!-- end exams-view -->
+        </section>
         
-        <!-- ==================== SYLLABUS VIEW ==================== -->
+        <!-- Syllabus View Section -->
         <section id="syllabus-view" class="view-section">
           <div class="syllabus-header">
             <span class="page-header-eyebrow">CLF-C02 &bull; Official Exam Guide</span>
@@ -567,12 +530,11 @@
           </div>
           <div class="syllabus-content-wrapper">
             <div class="syllabus-container" id="syllabus-container">
-              <!-- Dynamically populated or compiled from study-guide.md -->
             </div>
           </div>
         </section>
         
-        <!-- ==================== MIND MAP VIEW ==================== -->
+        <!-- Mind Map View Section -->
         <section id="mindmap-view" class="view-section">
           <div class="mindmap-header">
             <span class="page-header-eyebrow">19 Units &bull; 4 Domains</span>
@@ -584,7 +546,6 @@
             </div>
           </div>
           <div class="mindmap-container" id="mindmap-container">
-            <!-- JS-rendered interactive topic tree -->
           </div>
         </section>
         
@@ -592,7 +553,7 @@
     </div>
   </div>
 
-  <!-- Quiz Submission Modal -->
+  <!-- Dialog Modals -->
   <div class="modal-underlay" id="submit-modal" style="display: none;">
     <div class="modal-content">
       <h2>Submit Exam?</h2>
@@ -604,7 +565,6 @@
     </div>
   </div>
 
-  <!-- Reset Progress Modal -->
   <div class="modal-underlay" id="reset-confirm-modal" style="display: none; z-index: 3000;">
     <div class="modal-content">
       <h2 style="color: var(--danger-color);">Reset All Progress?</h2>
@@ -616,10 +576,8 @@
     </div>
   </div>
 
-  <!-- Backdrop for slide-up mobile drawers -->
   <div class="drawer-backdrop" id="drawer-backdrop"></div>
 
-  <!-- Client-side Logic Script -->
   <script src="assets/js/platform.js"></script>
 </body>
 </html>
