@@ -26,10 +26,12 @@ const state = {
   activeView: 'dashboard',
   notesProgress: {}, // maps module IDs to true/false
   examAttempts: [],  // list of completed exam scorecards
+  selectedExamVersion: 'generated', // 'original' or 'generated'
   
   activeExam: {
     id: null,
     mode: 'study', // study (feedback) or exam (timer)
+    isGenerated: false,
     questions: [],
     userAnswers: {}, // question index to chosen options
     flagged: new Set(),
@@ -147,7 +149,7 @@ function initRouting() {
 function handleRouteChange() {
   const hash = window.location.hash || '#dashboard';
   const parts = hash.split('?');
-  const route = parts[0];
+  let route = parts[0];
   const params = {};
   
   if (parts[1]) {
@@ -155,6 +157,22 @@ function handleRouteChange() {
       const kv = param.split('=');
       params[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1] || '');
     });
+  }
+  
+  let isDirectExamLink = false;
+  let directExamId = null;
+  let directExamGenerated = false;
+
+  if (route.startsWith('#practice-exam/')) {
+    isDirectExamLink = true;
+    directExamId = parseInt(route.split('/').pop());
+    directExamGenerated = false;
+    route = '#exams';
+  } else if (route.startsWith('#generated/practice-exam/')) {
+    isDirectExamLink = true;
+    directExamId = parseInt(route.split('/').pop());
+    directExamGenerated = true;
+    route = '#exams';
   }
   
   const viewName = route.replace('#', '');
@@ -187,6 +205,9 @@ function handleRouteChange() {
   } else if (viewName === 'exams') {
     if (params.attempt) {
       viewPastResult(parseInt(params.attempt));
+    } else if (isDirectExamLink) {
+      const examMode = params.mode || 'exam';
+      startExamFlow(directExamId, examMode, directExamGenerated);
     } else {
       setupExamsView(params.id);
     }
@@ -852,8 +873,17 @@ function setupExamsView(id) {
   const examsGrid = document.getElementById('exams-grid');
   let gridHTML = '';
   
-  for (let i = 1; i <= EXAMS_COUNT; i++) {
-    const attempts = state.examAttempts.filter(att => att.examId === i);
+  const isGen = state.selectedExamVersion === 'generated';
+  const count = isGen ? 10 : EXAMS_COUNT;
+  
+  // Update welcome header badge and text
+  const examsPillCount = document.getElementById('exams-pill-count');
+  if (examsPillCount) {
+    examsPillCount.innerText = count;
+  }
+  
+  for (let i = 1; i <= count; i++) {
+    const attempts = state.examAttempts.filter(att => att.examId === i && !!att.isGenerated === isGen);
     let statusDotClass = '';
     let statusText = 'Not Started';
     let bestScoreText = '';
@@ -887,20 +917,21 @@ function setupExamsView(id) {
         </div>`;
     }
     
+    const displayName = `Practice Exam ${i}`;
     gridHTML += `
       <div class="exam-panel-card">
         <div class="exam-panel-title-row">
-          <h3>Practice Exam ${i}</h3>
+          <h3>${displayName}</h3>
           <span class="exam-status-dot ${statusDotClass}" title="${statusText}"></span>
         </div>
         <div class="exam-panel-details">
-          <span class="exam-detail-type">Syllabus Simulation</span>
+          <span class="exam-detail-type">CCP Simulation</span>
           <span class="exam-detail-score">${bestScoreText || 'No attempts yet'}</span>
         </div>
         ${historyHTML}
         <div class="exam-actions-row">
-          <button class="btn btn-secondary" onclick="startExamFlow(${i}, 'study')">Study</button>
-          <button class="btn btn-primary" onclick="startExamFlow(${i}, 'exam')">Exam Mode</button>
+          <button class="btn btn-secondary" onclick="startExamFlow(${i}, 'study', ${isGen})">Study</button>
+          <button class="btn btn-primary" onclick="startExamFlow(${i}, 'exam', ${isGen})">Exam Mode</button>
         </div>
       </div>
     `;
@@ -909,6 +940,11 @@ function setupExamsView(id) {
   examsGrid.innerHTML = gridHTML;
   createIconsSafe();
 }
+
+window.switchExamVersion = function(version) {
+  state.selectedExamVersion = version;
+  setupExamsView();
+};
 
 // Load past results from local scorecard
 window.viewPastResult = function(attemptId) {
@@ -924,7 +960,11 @@ window.viewPastResult = function(attemptId) {
   const body = document.getElementById('results-active-question-details');
   if (body) body.innerHTML = '<p class="empty-state">Loading past result…</p>';
 
-  fetch(`practice-exam/practice-exam-${attempt.examId}.md`)
+  const path = attempt.isGenerated 
+    ? `practice-exam-generated/practice-exam-${attempt.examId}.md` 
+    : `practice-exam/practice-exam-${attempt.examId}.md`;
+
+  fetch(path)
     .then(res => { if (!res.ok) throw new Error(); return res.text(); })
     .then(text => {
       const questions = parseExamMarkdown(text);
@@ -932,6 +972,7 @@ window.viewPastResult = function(attemptId) {
       state.activeExam = {
         id: attempt.examId,
         mode: attempt.mode,
+        isGenerated: !!attempt.isGenerated,
         questions: questions,
         userAnswers: {},
         flagged: new Set(),
@@ -948,7 +989,7 @@ window.viewPastResult = function(attemptId) {
     });
 };
 
-window.startExamFlow = function(examId, mode) {
+window.startExamFlow = function(examId, mode, isGenerated = false) {
   if (state.activeExam.timerInterval) {
     clearInterval(state.activeExam.timerInterval);
   }
@@ -957,7 +998,8 @@ window.startExamFlow = function(examId, mode) {
   document.getElementById('exam-results-container').style.display = 'none';
   document.getElementById('active-exam-container').style.display = 'block';
   
-  document.getElementById('active-exam-title').innerText = `Practice Exam ${examId}`;
+  const displayTitle = `Practice Exam ${examId}`;
+  document.getElementById('active-exam-title').innerText = displayTitle;
   
   const modeBadge = document.getElementById('exam-mode-badge');
   modeBadge.innerText = mode === 'study' ? 'Study Mode' : 'Exam Mode';
@@ -980,7 +1022,11 @@ window.startExamFlow = function(examId, mode) {
     return;
   }
   
-  fetch(`practice-exam/practice-exam-${examId}.md`)
+  const path = isGenerated 
+    ? `practice-exam-generated/practice-exam-${examId}.md` 
+    : `practice-exam/practice-exam-${examId}.md`;
+
+  fetch(path)
     .then(res => {
       if (!res.ok) throw new Error('Exam file not found');
       return res.text();
@@ -994,6 +1040,7 @@ window.startExamFlow = function(examId, mode) {
       state.activeExam = {
         id: examId,
         mode: mode,
+        isGenerated: isGenerated,
         questions: questions,
         userAnswers: {},
         flagged: new Set(),
@@ -1399,6 +1446,7 @@ function submitActiveExam() {
     id: Date.now(),
     examId: ae.id,
     mode: ae.mode,
+    isGenerated: ae.isGenerated || false,
     score: percentage,
     correct: correctCount,
     total: total,
@@ -1423,9 +1471,10 @@ function renderExamResults(attempt) {
   const isStudy = attempt.mode === 'study';
   const ae = state.activeExam;
 
+  const displayNamePrefix = `Practice Exam ${attempt.examId}`;
   document.getElementById('results-exam-name').innerText = isStudy
-    ? `Practice Exam ${attempt.examId} — Study Summary`
-    : `Practice Exam ${attempt.examId} — Exam Results`;
+    ? `${displayNamePrefix} — Study Summary`
+    : `${displayNamePrefix} — Exam Results`;
   document.getElementById('results-date-string').innerText =
     `Completed on ${new Date(attempt.date).toLocaleString()}`;
 
@@ -1466,7 +1515,7 @@ function renderExamResults(attempt) {
 
   const retakeBtn = document.getElementById('results-retake-btn');
   if (retakeBtn) {
-    retakeBtn.onclick = () => startExamFlow(attempt.examId, attempt.mode);
+    retakeBtn.onclick = () => startExamFlow(attempt.examId, attempt.mode, !!attempt.isGenerated);
   }
 
   const backBtn = document.getElementById('results-back-exams-btn');

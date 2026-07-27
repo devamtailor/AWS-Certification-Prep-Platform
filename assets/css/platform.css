@@ -6353,3 +6353,40 @@ body .main-content {
 }
 
 /* Header actions hidden via JS when no note is open on mobile */
+
+/* Version selector for practice exams */
+.exam-version-selector {
+  display: inline-flex;
+  background-color: var(--bg-secondary);
+  padding: 4px;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-color);
+  gap: 4px;
+  margin-top: 16px;
+  margin-bottom: 24px;
+}
+
+.exam-version-selector .btn {
+  border: none !important;
+  padding: 8px 18px !important;
+  font-size: 13px !important;
+  transition: all 0.2s ease-in-out !important;
+  background-color: transparent;
+  color: var(--text-secondary);
+  border-radius: var(--border-radius-sm) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.exam-version-selector .btn.active-version-btn {
+  background-color: var(--accent-color) !important;
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+.exam-version-selector .btn:hover:not(.active-version-btn) {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
